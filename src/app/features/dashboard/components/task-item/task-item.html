@@ -1,1 +1,37 @@
-<div>task-item</div>
+<button
+  type="button"
+  class="task-item"
+  [class.completed-today]="isCompletedToday()"
+  [attr.aria-label]="getAriaLabel()"
+  [attr.aria-pressed]="isCompletedToday()"
+  matRipple
+  (click)="onTaskTap()">
+
+  <!-- Checkmark animation (shown when completed today) -->
+  <div class="checkmark-container">
+    @if (isCompletedToday()) {
+      <mat-icon class="checkmark-icon">check_circle</mat-icon>
+    } @else {
+      <mat-icon class="checkmark-icon empty">radio_button_unchecked</mat-icon>
+    }
+  </div>
+
+  <!-- Task info -->
+  <div class="task-info">
+    <span class="task-name">{{ task().name }}</span>
+    <div class="task-meta">
+      <!-- Progress dots -->
+      <div class="progress-dots" aria-hidden="true">
+        @for (filled of getProgressDots(); track $index) {
+          <span class="dot" [class.filled]="filled"></span>
+        }
+      </div>
+      <span class="task-details">{{ task().duration_minutes }}min</span>
+    </div>
+  </div>
+
+  <!-- Completion count -->
+  <div class="task-count">
+    <span class="count-text">{{ task().completed_count }}/{{ task().target_frequency }}</span>
+  </div>
+</button>

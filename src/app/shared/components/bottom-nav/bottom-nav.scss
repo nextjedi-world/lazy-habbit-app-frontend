@@ -1,0 +1,90 @@
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--mat-sys-surface);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  z-index: 1000;
+  height: 64px;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 16px;
+  min-width: 80px;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--mat-sys-on-surface-variant);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+
+  &:hover {
+    background: var(--mat-sys-surface-variant);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+
+  &.active {
+    color: var(--mat-sys-primary);
+
+    .nav-icon {
+      color: var(--mat-sys-primary);
+      transform: scale(1.1);
+    }
+
+    .nav-label {
+      font-weight: 600;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 32px;
+      height: 3px;
+      background: var(--mat-sys-primary);
+      border-radius: 0 0 3px 3px;
+    }
+  }
+}
+
+.nav-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s ease;
+}
+
+.nav-label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+// Responsive: hide labels on very small screens
+@media (max-width: 360px) {
+  .nav-label {
+    display: none;
+  }
+
+  .nav-item {
+    min-width: 60px;
+  }
+}

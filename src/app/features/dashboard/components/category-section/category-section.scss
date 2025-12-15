@@ -1,1 +1,101 @@
-.category-section { }
+.category-section {
+  margin-bottom: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.category-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--mat-sys-surface-container);
+  border-radius: 12px 12px 0 0;
+  border-left: 4px solid var(--mat-sys-primary);
+  margin-bottom: 12px;
+
+  .category-title-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .category-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .category-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  .category-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .progress-percentage {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--mat-sys-on-surface-variant);
+      min-width: 45px;
+      text-align: right;
+    }
+
+    mat-progress-bar {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+
+      ::ng-deep .mdc-linear-progress__bar-inner {
+        border-color: var(--progress-color, var(--mat-sys-primary)) !important;
+      }
+
+      ::ng-deep .mdc-linear-progress__buffer {
+        background-color: var(--mat-sys-surface-variant) !important;
+      }
+    }
+  }
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Responsive
+@media (max-width: 360px) {
+  .category-header {
+    padding: 12px;
+
+    .category-title-container {
+      .category-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+
+      .category-title {
+        font-size: 18px;
+      }
+    }
+
+    .category-progress {
+      .progress-percentage {
+        font-size: 14px;
+        min-width: 40px;
+      }
+    }
+  }
+
+  .task-list {
+    gap: 6px;
+  }
+}
