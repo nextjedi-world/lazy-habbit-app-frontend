@@ -1,1 +1,8 @@
-<div>progress-dots</div>
+<div class="progress-dots" [attr.aria-label]="ariaLabel()" role="status">
+  @for (dot of completedArray(); track $index) {
+    <span class="dot dot--filled" aria-hidden="true"></span>
+  }
+  @for (dot of remainingArray(); track $index) {
+    <span class="dot dot--empty" aria-hidden="true"></span>
+  }
+</div>
