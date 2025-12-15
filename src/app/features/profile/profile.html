@@ -1,1 +1,156 @@
-<div>Profile</div>
+<div class="profile-container">
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-spinner diameter="60"></mat-spinner>
+      <p>Loading profile...</p>
+    </div>
+  } @else {
+    <!-- User Profile Card -->
+    <mat-card class="profile-header">
+      <mat-card-content>
+        <div class="profile-info">
+          <!-- Large Tier Badge -->
+          <div class="tier-badge-large" [style.background]="tierGradient()" role="img" [attr.aria-label]="'Current tier ' + currentTier()">
+            <div class="tier-number">{{ currentTier() }}</div>
+            <div class="tier-label">TIER</div>
+          </div>
+
+          <!-- User Details -->
+          <div class="user-details">
+            <h1 class="user-name">{{ user()?.name || 'User' }}</h1>
+            <p class="user-email">{{ user()?.email }}</p>
+            <p class="tier-description">
+              @if (currentTier() <= 2) {
+                <span>Building foundations</span>
+              } @else if (currentTier() <= 5) {
+                <span>Gaining momentum</span>
+              } @else if (currentTier() <= 8) {
+                <span>Mastering consistency</span>
+              } @else {
+                <span>Peak performance</span>
+              }
+            </p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      @if (stats(); as statsData) {
+        <!-- Total Weeks -->
+        <mat-card class="stat-card stat-card-blue">
+          <mat-card-content>
+            <mat-icon class="stat-icon">calendar_today</mat-icon>
+            <div class="stat-value" [@countAnimation]="statsData.totalWeeks">{{ statsData.totalWeeks }}</div>
+            <div class="stat-label">Total Weeks</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Clean Weeks -->
+        <mat-card class="stat-card stat-card-green">
+          <mat-card-content>
+            <mat-icon class="stat-icon">check_circle</mat-icon>
+            <div class="stat-value" [@countAnimation]="statsData.cleanWeeks">{{ statsData.cleanWeeks }}</div>
+            <div class="stat-label">Clean Weeks</div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Current Streak -->
+        <mat-card class="stat-card stat-card-orange">
+          <mat-card-content>
+            <mat-icon class="stat-icon">local_fire_department</mat-icon>
+            <div class="stat-value" [@countAnimation]="statsData.currentStreak">{{ statsData.currentStreak }}</div>
+            <div class="stat-label">Current Streak</div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <!-- Recent Scores Table -->
+    <mat-card class="recent-scores-card">
+      <mat-card-header>
+        <mat-card-title>Recent Performance</mat-card-title>
+        <mat-card-subtitle>Last 4 weeks</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (recentScores().length > 0) {
+          <table mat-table [dataSource]="recentScores()" class="scores-table">
+            <!-- Week Column -->
+            <ng-container matColumnDef="week">
+              <th mat-header-cell *matHeaderCellDef>Week</th>
+              <td mat-cell *matCellDef="let score">{{ formatWeekDate(score.week_start_date) }}</td>
+            </ng-container>
+
+            <!-- Score Column -->
+            <ng-container matColumnDef="score">
+              <th mat-header-cell *matHeaderCellDef>Overall Score</th>
+              <td mat-cell *matCellDef="let score">
+                <div class="score-cell">
+                  <span class="score-percentage" [class.high-score]="score.overall_score >= 0.8" [class.mid-score]="score.overall_score >= 0.6 && score.overall_score < 0.8" [class.low-score]="score.overall_score < 0.6">
+                    {{ score.overall_score | percentage }}
+                  </span>
+                  @if (score.is_clean) {
+                    <mat-icon class="clean-icon" aria-label="Clean week">verified</mat-icon>
+                  }
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>assessment</mat-icon>
+            <p>No scores yet. Complete your first week to see performance data!</p>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Tier History Graph -->
+    <mat-card class="tier-history-card">
+      <mat-card-header>
+        <mat-card-title>Tier Progress</mat-card-title>
+        <mat-card-subtitle>Your journey over time</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (tierHistory().length > 0) {
+          <app-tier-graph [tierHistory]="tierHistory()"></app-tier-graph>
+        } @else {
+          <div class="empty-state">
+            <mat-icon>show_chart</mat-icon>
+            <p>Start completing weeks to build your tier history!</p>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Settings Section -->
+    <mat-card class="settings-card">
+      <mat-card-header>
+        <mat-card-title>Settings</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list>
+          <!-- Dark Mode Toggle -->
+          <mat-list-item>
+            <mat-icon matListItemIcon>brightness_4</mat-icon>
+            <div matListItemTitle>Dark Mode</div>
+            <div matListItemLine>{{ darkMode() ? 'Enabled' : 'Disabled' }}</div>
+            <mat-slide-toggle [checked]="darkMode()" (change)="toggleDarkMode()" color="primary" aria-label="Toggle dark mode"></mat-slide-toggle>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Logout Button -->
+    <div class="logout-section">
+      <button mat-stroked-button color="warn" class="logout-button" (click)="openLogoutDialog()" aria-label="Sign out of your account">
+        <mat-icon>logout</mat-icon>
+        Sign Out
+      </button>
+    </div>
+  }
+</div>

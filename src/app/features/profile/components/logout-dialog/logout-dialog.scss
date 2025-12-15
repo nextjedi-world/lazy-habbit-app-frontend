@@ -1,0 +1,20 @@
+mat-dialog-content {
+  padding: 1rem 0;
+
+  p {
+    margin: 0;
+    font-size: 1rem;
+    color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+mat-dialog-actions {
+  padding: 1rem 0 0 0;
+  gap: 0.5rem;
+}
+
+.dark-theme {
+  mat-dialog-content p {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}

@@ -1,1 +1,102 @@
-<div>tier-graph</div>
+<div class="tier-graph-container">
+  <svg class="tier-graph" [attr.viewBox]="viewBox()" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Tier progression graph showing your tier changes over time">
+    <!-- Grid lines -->
+    <g class="grid-lines">
+      @for (line of gridLines(); track line.tier) {
+        <line
+          [attr.x1]="line.x1"
+          [attr.y1]="line.y"
+          [attr.x2]="line.x2"
+          [attr.y2]="line.y"
+          class="grid-line"
+          [class.major-line]="line.tier % 2 === 0"
+        />
+      }
+    </g>
+
+    <!-- Y-axis labels (Tier numbers) -->
+    <g class="y-axis-labels">
+      @for (label of yAxisLabels(); track label.tier) {
+        <text
+          [attr.x]="label.x"
+          [attr.y]="label.y"
+          class="axis-label"
+          text-anchor="end"
+          dominant-baseline="middle">
+          {{ label.tier }}
+        </text>
+      }
+    </g>
+
+    <!-- Line path -->
+    @if (pathData()) {
+      <path
+        [attr.d]="pathData()"
+        class="tier-line"
+        fill="none"
+        stroke="url(#tier-gradient)"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    }
+
+    <!-- Data points -->
+    <g class="data-points">
+      @for (point of graphPoints(); track $index) {
+        <g class="point-group">
+          <!-- Outer circle (white border) -->
+          <circle
+            [attr.cx]="point.x"
+            [attr.cy]="point.y"
+            r="6"
+            fill="white"
+            stroke="none"
+          />
+          <!-- Inner circle (colored) -->
+          <circle
+            [attr.cx]="point.x"
+            [attr.cy]="point.y"
+            r="4"
+            [attr.fill]="getTierColor(point.tier)"
+            stroke="none"
+            class="data-point"
+            role="img"
+            [attr.aria-label]="'Tier ' + point.tier + ' on ' + point.date"
+          >
+            <title>Tier {{ point.tier }} - {{ point.date }}</title>
+          </circle>
+        </g>
+      }
+    </g>
+
+    <!-- Gradient definition -->
+    <defs>
+      <linearGradient id="tier-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+        <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- Legend -->
+  <div class="graph-legend">
+    <div class="legend-item">
+      <span class="legend-color" style="background: #60a5fa;"></span>
+      <span class="legend-text">Tier 0-2</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color" style="background: #3b82f6;"></span>
+      <span class="legend-text">Tier 3-5</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color" style="background: #8b5cf6;"></span>
+      <span class="legend-text">Tier 6-8</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-color" style="background: #fbbf24;"></span>
+      <span class="legend-text">Tier 9-10</span>
+    </div>
+  </div>
+</div>
