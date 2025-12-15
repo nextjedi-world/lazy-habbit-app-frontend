@@ -1,1 +1,101 @@
-<div>Planning</div>
+<div class="planning-container">
+  <!-- Header -->
+  <header class="planning-header">
+    <h1>Plan Your Week</h1>
+    <div class="total-hours" [class.animated]="hasTasks()">
+      <span class="hours-value">{{ totalHours().toFixed(1) }}</span>
+      <span class="hours-label">hours/week</span>
+    </div>
+  </header>
+
+  <!-- Loading Spinner -->
+  @if (loading()) {
+    <div class="loading-overlay">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Creating your plan...</p>
+    </div>
+  }
+
+  <!-- Primary Action Buttons (if last week plan exists) -->
+  @if (hasLastWeekPlan() && !hasTasks()) {
+    <section class="action-section" aria-label="Quick actions">
+      <button
+        mat-raised-button
+        color="primary"
+        class="primary-action pulse"
+        (click)="repeatLastWeek()"
+        [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Repeat Last Week
+      </button>
+
+      <button
+        mat-stroked-button
+        class="secondary-action"
+        (click)="startFreshPlan()"
+        [disabled]="loading()">
+        <mat-icon>add_circle_outline</mat-icon>
+        Start Fresh
+      </button>
+    </section>
+  }
+
+  <!-- Empty State (no tasks) -->
+  @if (!hasTasks() && !hasLastWeekPlan()) {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">event_note</mat-icon>
+      <h2>Create Your First Weekly Plan</h2>
+      <p>Build your week by adding tasks below. Set goals, track progress, and achieve more!</p>
+      <button mat-raised-button color="primary" (click)="addTask()">
+        <mat-icon>add</mat-icon>
+        Add Your First Task
+      </button>
+    </div>
+  }
+
+  <!-- Task List -->
+  @if (hasTasks()) {
+    <section class="task-list" aria-label="Weekly tasks">
+      @for (task of tasks(); track $index) {
+        <app-task-form
+          [task]="task"
+          [categories]="categories()"
+          [taskIndex]="$index"
+          (taskChange)="onTaskChange($index, $event)"
+          (removeTask)="removeTask($index)" />
+      }
+    </section>
+  }
+
+  <!-- Floating Action Button (Add Task) -->
+  @if (hasTasks()) {
+    <button
+      mat-fab
+      color="accent"
+      class="fab-add-task"
+      (click)="addTask()"
+      [attr.aria-label]="'Add task ' + (tasks().length + 1)"
+      [disabled]="loading()">
+      <mat-icon>add</mat-icon>
+    </button>
+  }
+
+  <!-- Save Button (sticky bottom) -->
+  @if (hasTasks()) {
+    <div class="save-section">
+      <button
+        mat-raised-button
+        color="primary"
+        class="save-btn"
+        (click)="savePlan()"
+        [disabled]="!isFormValid() || loading()">
+        <mat-icon>save</mat-icon>
+        Save Weekly Plan
+      </button>
+
+      @if (!isFormValid() && tasks().length > 0) {
+        <p class="save-hint">Complete all task fields to save</p>
+      }
+    </div>
+  }
+</div>
