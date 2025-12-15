@@ -1,1 +1,318 @@
-.register { padding: 1rem; }
+// Register Container with Gradient Background
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  animation: gradientShift 15s ease infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// Card Styling
+.register-card {
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Header Styling
+.header-content {
+  width: 100%;
+  text-align: center;
+  padding: 1rem 0;
+
+  .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #667eea;
+    }
+  }
+
+  mat-card-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  mat-card-subtitle {
+    font-size: 0.95rem;
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+// Form Fields
+.full-width {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+mat-form-field {
+  ::ng-deep {
+    .mat-mdc-text-field-wrapper {
+      background-color: #fafafa;
+    }
+
+    .mat-mdc-form-field-icon-prefix,
+    .mat-mdc-form-field-icon-suffix {
+      mat-icon {
+        color: rgba(0, 0, 0, 0.54);
+      }
+    }
+  }
+}
+
+// Password Strength Indicator
+.password-strength-container {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-out;
+
+  .strength-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+
+    .strength-label {
+      font-size: 0.875rem;
+      color: rgba(0, 0, 0, 0.7);
+      font-weight: 500;
+    }
+
+    .strength-value {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &.weak {
+        color: #f44336;
+      }
+
+      &.good {
+        color: #ff9800;
+      }
+
+      &.strong {
+        color: #4caf50;
+      }
+    }
+  }
+
+  .strength-bar {
+    border-radius: 4px;
+    height: 8px;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 100px;
+  }
+}
+
+// Error Message
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  margin-bottom: 1rem;
+  background-color: #ffebee;
+  color: #c62828;
+  border-radius: 8px;
+  border-left: 4px solid #f44336;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Submit Button
+.submit-button {
+  margin-top: 0.5rem;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+
+  &:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  mat-spinner {
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+
+  span {
+    vertical-align: middle;
+  }
+}
+
+// Login Link
+.login-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(0, 0, 0, 0.7);
+
+  a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.25rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    &:focus {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+}
+
+// Mobile Responsive Design
+@media (max-width: 600px) {
+  .register-container {
+    padding: 0.5rem;
+  }
+
+  .register-card {
+    max-width: 100%;
+    border-radius: 12px;
+  }
+
+  .header-content {
+    mat-card-title {
+      font-size: 1.5rem;
+    }
+
+    mat-card-subtitle {
+      font-size: 0.875rem;
+    }
+
+    .logo mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .submit-button {
+    font-size: 0.95rem;
+  }
+}
+
+// Tablet Responsive Design
+@media (min-width: 601px) and (max-width: 960px) {
+  .register-card {
+    max-width: 500px;
+  }
+}
+
+// Touch Target Accessibility (minimum 44x44px)
+button[mat-icon-button] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+button[type="submit"] {
+  min-height: 48px;
+
+  @media (max-width: 600px) {
+    min-height: 52px; // Larger touch target on mobile
+  }
+}
+
+// Focus Visible Enhancement
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// High Contrast Mode Support
+@media (prefers-contrast: high) {
+  .register-container {
+    background: #000;
+  }
+
+  .register-card {
+    border: 2px solid #fff;
+  }
+
+  .error-message {
+    border: 2px solid #f44336;
+  }
+}

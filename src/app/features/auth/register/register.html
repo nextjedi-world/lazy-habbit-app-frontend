@@ -1,1 +1,144 @@
-<div>Register</div>
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <div class="header-content">
+        <div class="logo" aria-hidden="true">
+          <mat-icon>self_improvement</mat-icon>
+        </div>
+        <mat-card-title>Create Your Account</mat-card-title>
+        <mat-card-subtitle>Start building better habits today</mat-card-subtitle>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <!-- Name Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Name</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="name"
+            placeholder="Your name"
+            aria-label="Full name"
+            autocomplete="name"
+          />
+          @if (registerForm.get('name')?.hasError('required')) {
+            <mat-error>Name is required</mat-error>
+          }
+          @if (registerForm.get('name')?.hasError('minlength')) {
+            <mat-error>Name must be at least 2 characters</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="email"
+            placeholder="you@example.com"
+            aria-label="Email address"
+            autocomplete="email"
+          />
+          <mat-icon matPrefix>email</mat-icon>
+          @if (registerForm.get('email')?.hasError('required')) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (registerForm.get('email')?.hasError('email')) {
+            <mat-error>Please enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Password Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="At least 8 characters"
+            aria-label="Password"
+            autocomplete="new-password"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+            [attr.aria-pressed]="!hidePassword()"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+          </button>
+          @if (registerForm.get('password')?.hasError('required')) {
+            <mat-error>Password is required</mat-error>
+          }
+          @if (registerForm.get('password')?.hasError('minlength')) {
+            <mat-error>Password must be at least 8 characters</mat-error>
+          }
+          @if (registerForm.get('password')?.hasError('pattern')) {
+            <mat-error>Password must contain uppercase, lowercase, and a number</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Password Strength Indicator -->
+        @if (registerForm.get('password')?.value) {
+          <div class="password-strength-container" role="status" aria-live="polite">
+            <div class="strength-header">
+              <span class="strength-label">Password Strength:</span>
+              <span
+                class="strength-value"
+                [class.weak]="passwordStrength() < 40"
+                [class.good]="passwordStrength() >= 40 && passwordStrength() < 70"
+                [class.strong]="passwordStrength() >= 70"
+              >
+                {{ strengthLabel() }}
+              </span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="passwordStrength()"
+              [color]="strengthColor()"
+              class="strength-bar"
+              [attr.aria-label]="'Password strength: ' + strengthLabel()"
+            ></mat-progress-bar>
+          </div>
+        }
+
+        <!-- Error Message -->
+        @if (errorMessage()) {
+          <div class="error-message slide-in" role="alert">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <!-- Submit Button -->
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="full-width submit-button"
+          [disabled]="loading() || registerForm.invalid"
+          [attr.aria-label]="loading() ? 'Creating account...' : 'Create account'"
+        >
+          @if (loading()) {
+            <mat-spinner diameter="20" color="accent"></mat-spinner>
+            <span>Creating account...</span>
+          } @else {
+            Create Account
+          }
+        </button>
+
+        <!-- Login Link -->
+        <div class="login-link">
+          Already have an account?
+          <a routerLink="/auth/login" aria-label="Go to login page">Login</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
