@@ -1,1 +1,38 @@
-<div>score-card</div>
+<mat-card
+  class="score-card"
+  [class.below-threshold]="belowThreshold()"
+  [style.animation-delay]="animationDelay() + 'ms'"
+  role="article"
+  [attr.aria-label]="categoryName() + ' category score: ' + (score() | percentage)"
+>
+  <mat-card-header>
+    <div class="card-icon-container" [style.background-color]="color()">
+      <mat-icon class="category-icon">{{ getCategoryIcon(categoryName()) }}</mat-icon>
+    </div>
+    <mat-card-title>{{ categoryName() }}</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="progress-container">
+      <mat-progress-bar
+        mode="determinate"
+        [value]="score() * 100"
+        [color]="belowThreshold() ? 'warn' : 'primary'"
+        [style.--progress-color]="color()"
+      ></mat-progress-bar>
+    </div>
+
+    <div class="score-display">
+      <span class="score-percentage" [class.warning]="belowThreshold()">
+        {{ score() | percentage }}
+      </span>
+
+      @if (belowThreshold()) {
+        <span class="threshold-warning" role="alert" aria-live="polite">
+          <mat-icon>warning</mat-icon>
+          Below 50%
+        </span>
+      }
+    </div>
+  </mat-card-content>
+</mat-card>

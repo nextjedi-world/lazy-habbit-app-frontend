@@ -1,1 +1,144 @@
-.score-card { }
+.score-card {
+  opacity: 0;
+  animation: slideInCard 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  &.below-threshold {
+    border-left: 4px solid var(--mat-sys-error);
+  }
+
+  mat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1rem 0.5rem;
+
+    .card-icon-container {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .category-icon {
+        color: white;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    mat-card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--mat-sys-on-surface);
+    }
+  }
+
+  mat-card-content {
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .progress-container {
+      position: relative;
+
+      mat-progress-bar {
+        height: 12px;
+        border-radius: 6px;
+        overflow: hidden;
+
+        ::ng-deep .mdc-linear-progress__bar-inner {
+          border-color: var(--progress-color) !important;
+        }
+      }
+    }
+
+    .score-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+
+      .score-percentage {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--mat-sys-primary);
+
+        &.warning {
+          color: var(--mat-sys-error);
+        }
+      }
+
+      .threshold-warning {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.75rem;
+        color: var(--mat-sys-error);
+        font-weight: 500;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideInCard {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .score-card {
+    mat-card-header {
+      .card-icon-container {
+        width: 40px;
+        height: 40px;
+
+        .category-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+
+      mat-card-title {
+        font-size: 1rem;
+      }
+    }
+
+    mat-card-content {
+      .score-display {
+        .score-percentage {
+          font-size: 1.25rem;
+        }
+      }
+    }
+  }
+}
