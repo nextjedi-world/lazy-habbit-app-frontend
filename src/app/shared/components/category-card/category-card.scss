@@ -1,1 +1,125 @@
-.category-card { }
+.category-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  &__icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: currentColor;
+    opacity: 0.1;
+    position: relative;
+
+    .material-icons {
+      position: absolute;
+      font-size: 24px;
+      opacity: 1;
+    }
+  }
+
+  &__name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    flex: 1;
+  }
+
+  &__progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__percentage {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    min-width: 42px;
+    text-align: right;
+  }
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+
+  &__fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Dark theme support
+@media (prefers-color-scheme: dark) {
+  .category-card {
+    background: #1f2937;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    &__name {
+      color: #f9fafb;
+    }
+
+    &__percentage {
+      color: #9ca3af;
+    }
+  }
+
+  .progress-bar {
+    background: #374151;
+  }
+}
