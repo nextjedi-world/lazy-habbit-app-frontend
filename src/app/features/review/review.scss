@@ -1,1 +1,400 @@
-.review { padding: 1rem; }
+:root {
+  --color-promotion: #10b981;
+  --color-stable: #3b82f6;
+  --color-demotion: #ef4444;
+}
+
+.review-container {
+  min-height: 100vh;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 100px; // Space for FAB
+}
+
+.review-header {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--mat-sys-on-surface);
+    margin: 0;
+  }
+}
+
+// Loading State
+.loading-state {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  p {
+    margin-top: 1rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+// Error State
+.error-card {
+  margin: 2rem 0;
+
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+    }
+
+    p {
+      text-align: center;
+      color: var(--mat-sys-error);
+    }
+  }
+}
+
+// Circular Progress Container
+.circular-progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2rem 0;
+  position: relative;
+}
+
+.circular-progress {
+  width: 250px;
+  height: 250px;
+  animation: fadeIn 0.5s ease-in;
+
+  .progress-circle {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: drawCircle 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .progress-text {
+    font-size: 2.5rem;
+    font-weight: 700;
+    fill: var(--mat-sys-on-surface);
+    animation: countUp 1.5s ease-out;
+  }
+
+  .progress-label {
+    font-size: 0.875rem;
+    fill: var(--mat-sys-on-surface-variant);
+    opacity: 0;
+    animation: fadeInDelay 0.5s ease-in 1s forwards;
+  }
+}
+
+// Clean Week Badge
+.clean-week-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--color-promotion), #059669);
+  color: white;
+  border-radius: 50px;
+  margin-top: 1rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1.5s backwards;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Section Divider
+.section-divider {
+  margin: 2rem 0;
+}
+
+// Score Details
+.score-details {
+  margin: 2rem 0;
+  animation: slideUp 0.5s ease-out 0.3s backwards;
+
+  mat-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .score-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: var(--mat-sys-on-surface-variant);
+      font-weight: 500;
+    }
+
+    .metric-value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--mat-sys-primary);
+    }
+
+    .metric-highlight {
+      color: var(--color-promotion);
+    }
+  }
+}
+
+// Category Breakdown
+.category-breakdown {
+  margin: 2rem 0;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--mat-sys-on-surface);
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+// Floating Action Button
+.fab-plan-next {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  animation: fadeInUp 0.5s ease-out 0.8s backwards;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Confetti Animation
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f0f;
+  top: -10px;
+  opacity: 0;
+  animation: confettiFall 3s linear;
+
+  &:nth-child(1) {
+    left: 10%;
+    background: #ff6b6b;
+    animation-delay: 0s;
+  }
+
+  &:nth-child(2) {
+    left: 20%;
+    background: #4ecdc4;
+    animation-delay: 0.2s;
+  }
+
+  &:nth-child(3) {
+    left: 30%;
+    background: #ffd93d;
+    animation-delay: 0.4s;
+  }
+
+  &:nth-child(4) {
+    left: 40%;
+    background: #95e1d3;
+    animation-delay: 0.6s;
+  }
+
+  &:nth-child(5) {
+    left: 50%;
+    background: #a78bfa;
+    animation-delay: 0.8s;
+  }
+
+  &:nth-child(6) {
+    left: 60%;
+    background: #60a5fa;
+    animation-delay: 1s;
+  }
+
+  &:nth-child(7) {
+    left: 70%;
+    background: #ff6b6b;
+    animation-delay: 1.2s;
+  }
+
+  &:nth-child(8) {
+    left: 80%;
+    background: #4ecdc4;
+    animation-delay: 1.4s;
+  }
+
+  &:nth-child(9) {
+    left: 90%;
+    background: #ffd93d;
+    animation-delay: 1.6s;
+  }
+
+  &:nth-child(10) {
+    left: 95%;
+    background: #95e1d3;
+    animation-delay: 1.8s;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDelay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawCircle {
+  from {
+    stroke-dashoffset: 534;
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .review-container {
+    padding: 0.5rem;
+    padding-bottom: 80px;
+  }
+
+  .circular-progress {
+    width: 200px;
+    height: 200px;
+  }
+
+  .category-breakdown {
+    .category-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .fab-plan-next {
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .score-details {
+    .score-metrics {
+      grid-template-columns: 1fr;
+    }
+  }
+}
