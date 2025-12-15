@@ -57,6 +57,49 @@
   }
 }
 
+.weekly-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(63, 81, 181, 0.08) 0%, rgba(63, 81, 181, 0.12) 100%);
+  border-left: 3px solid #3f51b5;
+  border-radius: 8px;
+  margin-top: 8px;
+  animation: slideIn 0.3s ease;
+
+  .total-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #3f51b5;
+  }
+
+  .total-label {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    font-weight: 500;
+  }
+
+  .total-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #3f51b5;
+    margin-left: auto;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .category-indicator {
   margin-top: 0.75rem;
   padding: 0.5rem 1rem;

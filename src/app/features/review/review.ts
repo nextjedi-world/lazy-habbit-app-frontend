@@ -95,8 +95,8 @@ export class ReviewComponent implements OnInit {
       const plan = this.planService.activePlan()!;
 
       // Load tasks for the plan
-      await this.planService.loadTasksForPlan(plan.id);
-      const tasks = this.planService.tasks();
+      await this.planService.loadPlannedTasks(plan.id);
+      const tasks = this.planService.plannedTasks();
 
       // Load categories
       await this.userService.loadCategories(user.id);

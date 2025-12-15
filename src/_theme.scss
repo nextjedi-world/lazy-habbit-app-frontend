@@ -10,154 +10,15 @@
 @include mat.core();
 
 // ========================================
-// Custom Color Palettes
+// Theme Configuration (Material 3)
 // ========================================
 
-// PRIMARY: Vibrant Blue (#2563EB) - Trust, productivity, focus
-$primary-palette: (
-  0: #000000,
-  10: #001848,
-  20: #002b73,
-  25: #00368d,
-  30: #0041a8,
-  35: #004dc4,
-  40: #0059e1,
-  50: #2563EB,  // Main brand color
-  60: #4f7ef7,
-  70: #7199ff,
-  80: #a0c4ff,
-  90: #d4e3ff,
-  95: #ebf1ff,
-  98: #f8f9ff,
-  99: #fdfcff,
-  100: #ffffff,
-
-  // Contrast colors for accessibility
-  primary: #2563EB,
-  secondary: #4f7ef7,
-  tertiary: #7199ff,
-  neutral: #ffffff,
-  neutral-variant: #f0f0f0,
-  error: #ba1a1a,
-);
-
-// ACCENT: Energetic Orange (#F97316) - Motivation, action, rewards
-$accent-palette: (
-  0: #000000,
-  10: #380d00,
-  20: #5e1900,
-  25: #722000,
-  30: #8a2800,
-  35: #a23100,
-  40: #ba3a00,
-  50: #F97316,  // Main accent color
-  60: #ff8c3f,
-  70: #ffa361,
-  80: #ffb98a,
-  90: #ffdcc7,
-  95: #ffede5,
-  98: #fff8f6,
-  99: #fffbff,
-  100: #ffffff,
-
-  primary: #F97316,
-  secondary: #ff8c3f,
-  tertiary: #ffa361,
-  neutral: #ffffff,
-  neutral-variant: #fff5f0,
-  error: #ba1a1a,
-);
-
-// SUCCESS: Fresh Green (#10B981) - Achievement, growth, clean weeks
-$success-palette: (
-  0: #000000,
-  10: #002111,
-  20: #00391f,
-  25: #004527,
-  30: #00522f,
-  35: #006038,
-  40: #006e41,
-  50: #10B981,  // Main success color
-  60: #3dd598,
-  70: #5ce0ad,
-  80: #81f0c5,
-  90: #a7ffdb,
-  95: #c5ffe9,
-  98: #e5fff3,
-  99: #f4fffb,
-  100: #ffffff,
-
-  primary: #10B981,
-  secondary: #3dd598,
-  tertiary: #5ce0ad,
-  neutral: #ffffff,
-  neutral-variant: #f0fff9,
-  error: #ba1a1a,
-);
-
-// WARNING: Bright Yellow (#FBBF24) - Caution, mid-week checkpoint
-$warning-palette: (
-  0: #000000,
-  10: #1f1b00,
-  20: #342f00,
-  25: #3f3a00,
-  30: #4b4500,
-  35: #585100,
-  40: #655d00,
-  50: #FBBF24,  // Main warning color
-  60: #ffd54f,
-  70: #ffe066,
-  80: #ffeb8a,
-  90: #fff4b3,
-  95: #fffad4,
-  98: #fffdf0,
-  99: #fffefb,
-  100: #ffffff,
-
-  primary: #FBBF24,
-  secondary: #ffd54f,
-  tertiary: #ffe066,
-  neutral: #ffffff,
-  neutral-variant: #fffef5,
-  error: #ba1a1a,
-);
-
-// DANGER/ERROR: Bold Red (#EF4444) - Alerts, demotion track, errors
-$danger-palette: (
-  0: #000000,
-  10: #400003,
-  20: #680009,
-  25: #7f000f,
-  30: #960016,
-  35: #ae001d,
-  40: #c70025,
-  50: #EF4444,  // Main error color
-  60: #ff6961,
-  70: #ff897d,
-  80: #ffb4ab,
-  90: #ffdad6,
-  95: #ffedea,
-  98: #fff8f7,
-  99: #fffbff,
-  100: #ffffff,
-
-  primary: #EF4444,
-  secondary: #ff6961,
-  tertiary: #ff897d,
-  neutral: #ffffff,
-  neutral-variant: #fff5f5,
-  error: #EF4444,
-);
-
-// ========================================
-// Light Theme Configuration
-// ========================================
-
+// Define light theme with blue primary and orange tertiary
 $light-theme: mat.define-theme((
   color: (
     theme-type: light,
-    primary: $primary-palette,
-    tertiary: $accent-palette,
+    primary: mat.$blue-palette,
+    tertiary: mat.$orange-palette,
   ),
   typography: (
     brand-family: 'Inter, system-ui, -apple-system, sans-serif',
@@ -171,15 +32,12 @@ $light-theme: mat.define-theme((
   ),
 ));
 
-// ========================================
-// Dark Theme Configuration
-// ========================================
-
+// Define dark theme
 $dark-theme: mat.define-theme((
   color: (
     theme-type: dark,
-    primary: $primary-palette,
-    tertiary: $accent-palette,
+    primary: mat.$blue-palette,
+    tertiary: mat.$orange-palette,
   ),
   typography: (
     brand-family: 'Inter, system-ui, -apple-system, sans-serif',

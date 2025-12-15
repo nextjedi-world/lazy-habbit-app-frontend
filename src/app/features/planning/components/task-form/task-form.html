@@ -81,6 +81,15 @@
         }
       </mat-form-field>
     </div>
+
+    <!-- Weekly Total Display -->
+    @if (taskForm.valid && weeklyHours > 0) {
+      <div class="weekly-total">
+        <mat-icon class="total-icon">schedule</mat-icon>
+        <span class="total-label">Weekly total:</span>
+        <span class="total-value">{{ weeklyHoursDisplay }}</span>
+      </div>
+    }
   </div>
 
   <!-- Visual indicator for selected category -->

@@ -24,6 +24,58 @@ export class UserService {
   currentTier = computed(() => this.profileSignal()?.current_tier ?? 0);
 
   /**
+   * Ensure user profile exists
+   * This is a safeguard for cases where the signup trigger didn't create the profile
+   */
+  private async ensureProfileExists(userId: string): Promise<UserProfile> {
+    try {
+      // Check if profile exists
+      const { data: profile, error: profileError } = await this.supabase.client
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      // Profile exists, return it
+      if (profile && !profileError) {
+        return profile;
+      }
+
+      // Profile doesn't exist - create it
+      const user = await this.supabase.getCurrentUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const { data: newProfile, error: createError } = await this.supabase.client
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: user.email ?? '',
+          name: user.user_metadata?.['name'] ?? 'User',
+          current_tier: 0
+        })
+        .select()
+        .single();
+
+      if (createError || !newProfile) {
+        console.error('Failed to create profile:', createError);
+        throw new Error('Failed to create user profile. Please contact support.');
+      }
+
+      console.log('Profile created successfully for user:', userId);
+
+      // Create default categories for new user
+      await this.createDefaultCategories(userId);
+
+      return newProfile;
+    } catch (err) {
+      console.error('Error ensuring profile exists:', err);
+      throw err;
+    }
+  }
+
+  /**
    * Load user profile from database
    */
   async loadProfile(userId: string): Promise<void> {
@@ -31,14 +83,8 @@ export class UserService {
     this.errorSignal.set(null);
 
     try {
-      const { data, error } = await this.supabase.client
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      this.profileSignal.set(data);
+      const profile = await this.ensureProfileExists(userId);
+      this.profileSignal.set(profile);
     } catch (err) {
       this.errorSignal.set(err instanceof Error ? err.message : 'Failed to load profile');
       throw err;
@@ -54,6 +100,9 @@ export class UserService {
     this.errorSignal.set(null);
 
     try {
+      // Ensure profile exists first
+      await this.ensureProfileExists(userId);
+
       const { data, error } = await this.supabase.client
         .from('categories')
         .select('*')
@@ -61,7 +110,14 @@ export class UserService {
         .order('display_order');
 
       if (error) throw error;
-      this.categoriesSignal.set(data ?? []);
+
+      // If no categories exist, create default ones
+      if (!data || data.length === 0) {
+        await this.createDefaultCategories(userId);
+        return;
+      }
+
+      this.categoriesSignal.set(data);
     } catch (err) {
       this.errorSignal.set(err instanceof Error ? err.message : 'Failed to load categories');
       throw err;

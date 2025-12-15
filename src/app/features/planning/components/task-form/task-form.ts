@@ -117,4 +117,19 @@ export class TaskFormComponent {
     const colors = ['health', 'learning', 'creative', 'leisure', 'project', 'career'];
     return colors[index] || 'health';
   }
+
+  // Calculate total hours per week for this task
+  get weeklyHours(): number {
+    const duration = this.taskForm.controls.duration_minutes.value;
+    const frequency = this.taskForm.controls.target_frequency.value;
+    return (duration * frequency) / 60;
+  }
+
+  // Format the weekly hours display
+  get weeklyHoursDisplay(): string {
+    const hours = this.weeklyHours;
+    if (hours === 0) return '';
+    if (hours < 1) return `${Math.round(hours * 60)}min/week`;
+    return `${hours.toFixed(1)}h/week`;
+  }
 }

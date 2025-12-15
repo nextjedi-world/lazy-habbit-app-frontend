@@ -39,6 +39,9 @@ export class PlanService {
     this.errorSignal.set(null);
 
     try {
+      // Ensure profile exists
+      await this.ensureProfileExists(userId);
+
       const weekStart = this.getWeekStart();
 
       const { data, error } = await this.supabase.client
@@ -90,12 +93,60 @@ export class PlanService {
   }
 
   /**
+   * Ensure user profile exists before creating plan
+   * This is a safeguard for cases where the signup trigger didn't create the profile
+   */
+  private async ensureProfileExists(userId: string): Promise<void> {
+    try {
+      // Check if profile exists
+      const { data: profile, error: profileError } = await this.supabase.client
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      // Profile exists, we're good
+      if (profile && !profileError) {
+        return;
+      }
+
+      // Profile doesn't exist - create it
+      const user = await this.supabase.getCurrentUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      const { error: createError } = await this.supabase.client
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: user.email ?? '',
+          name: user.user_metadata?.['name'] ?? 'User',
+          current_tier: 0
+        });
+
+      if (createError) {
+        console.error('Failed to create profile:', createError);
+        throw new Error('Failed to create user profile. Please contact support.');
+      }
+
+      console.log('Profile created successfully for user:', userId);
+    } catch (err) {
+      console.error('Error ensuring profile exists:', err);
+      throw err;
+    }
+  }
+
+  /**
    * Create new weekly plan
    */
   async createPlan(userId: string): Promise<WeeklyPlan> {
     this.errorSignal.set(null);
 
     try {
+      // Ensure profile exists before creating plan
+      await this.ensureProfileExists(userId);
+
       const weekStart = this.getWeekStart();
 
       const { data, error } = await this.supabase.client

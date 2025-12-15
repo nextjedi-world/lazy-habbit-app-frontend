@@ -16,21 +16,40 @@ export class AuthService {
   private _isAuthenticated = signal(false);
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
 
+  private _isInitialized = signal(false);
+  readonly isInitialized = this._isInitialized.asReadonly();
+
+  private initPromise: Promise<void>;
+
   constructor() {
-    this.initializeAuth();
+    this.initPromise = this.initializeAuth();
   }
 
-  private async initializeAuth() {
-    // Check initial auth state
-    const user = await this.supabase.getCurrentUser();
-    this._currentUser.set(user);
-    this._isAuthenticated.set(!!user);
-
-    // Listen to auth changes
-    this.supabase.onAuthStateChange((user) => {
+  private async initializeAuth(): Promise<void> {
+    try {
+      // Check initial auth state (Supabase automatically restores from localStorage)
+      const user = await this.supabase.getCurrentUser();
       this._currentUser.set(user);
       this._isAuthenticated.set(!!user);
-    });
+      this._isInitialized.set(true);
+
+      // Listen to auth changes
+      this.supabase.onAuthStateChange((user) => {
+        this._currentUser.set(user);
+        this._isAuthenticated.set(!!user);
+      });
+    } catch (error) {
+      console.error('Auth initialization failed:', error);
+      this._isInitialized.set(true);
+    }
+  }
+
+  /**
+   * Wait for auth initialization to complete
+   * This should be called by guards before checking auth state
+   */
+  async waitForInit(): Promise<void> {
+    return this.initPromise;
   }
 
   async signUp(email: string, password: string, name: string) {

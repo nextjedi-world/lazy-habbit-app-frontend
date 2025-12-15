@@ -14,7 +14,7 @@ import { Category } from '../../core/models/user.model';
 
 import { WeekSummaryComponent } from './components/week-summary/week-summary';
 import { CategorySectionComponent } from './components/category-section/category-section';
-import { BottomNav } from '../../shared/components/bottom-nav/bottom-nav';
+import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav';
 
 interface CategoryGroup {
   category: Category;
@@ -47,7 +47,7 @@ interface WeekSummary {
     MatSnackBarModule,
     WeekSummaryComponent,
     CategorySectionComponent,
-    BottomNav
+    BottomNavComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -196,7 +196,7 @@ export class DashboardComponent implements OnInit {
 
       const group = categoryMap.get(categoryId)!;
       group.tasks.push(task);
-      group.totalHours += task.duration_minutes / 60;
+      group.totalHours += (task.duration_minutes * task.target_frequency) / 60;
       group.totalTasks += task.target_frequency;
       group.completedHours += (completedCount * task.duration_minutes) / 60;
       group.completedTasks += completedCount;
@@ -230,7 +230,7 @@ export class DashboardComponent implements OnInit {
     let totalTasks = 0;
 
     tasks.forEach(task => {
-      totalHours += task.duration_minutes / 60;
+      totalHours += (task.duration_minutes * task.target_frequency) / 60;
       totalTasks += task.target_frequency;
       completedHours += (task.completed_count * task.duration_minutes) / 60;
       completedTasks += task.completed_count;
