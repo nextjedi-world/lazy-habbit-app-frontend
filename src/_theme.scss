@@ -1,37 +1,369 @@
 @use '@angular/material' as mat;
+@use 'sass:map';
+
+// ========================================
+// Material Design 3 Theme Configuration
+// ========================================
+// Colorful, energetic theme for Lazy Habbit App
+// Mobile-first PWA with dark mode support
 
 @include mat.core();
 
-$primary-palette: mat.m2-define-palette(mat.$m2-indigo-palette);
-$accent-palette: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
-$warn-palette: mat.m2-define-palette(mat.$m2-red-palette);
+// ========================================
+// Custom Color Palettes
+// ========================================
 
-$light-theme: mat.m2-define-light-theme((
+// PRIMARY: Vibrant Blue (#2563EB) - Trust, productivity, focus
+$primary-palette: (
+  0: #000000,
+  10: #001848,
+  20: #002b73,
+  25: #00368d,
+  30: #0041a8,
+  35: #004dc4,
+  40: #0059e1,
+  50: #2563EB,  // Main brand color
+  60: #4f7ef7,
+  70: #7199ff,
+  80: #a0c4ff,
+  90: #d4e3ff,
+  95: #ebf1ff,
+  98: #f8f9ff,
+  99: #fdfcff,
+  100: #ffffff,
+
+  // Contrast colors for accessibility
+  primary: #2563EB,
+  secondary: #4f7ef7,
+  tertiary: #7199ff,
+  neutral: #ffffff,
+  neutral-variant: #f0f0f0,
+  error: #ba1a1a,
+);
+
+// ACCENT: Energetic Orange (#F97316) - Motivation, action, rewards
+$accent-palette: (
+  0: #000000,
+  10: #380d00,
+  20: #5e1900,
+  25: #722000,
+  30: #8a2800,
+  35: #a23100,
+  40: #ba3a00,
+  50: #F97316,  // Main accent color
+  60: #ff8c3f,
+  70: #ffa361,
+  80: #ffb98a,
+  90: #ffdcc7,
+  95: #ffede5,
+  98: #fff8f6,
+  99: #fffbff,
+  100: #ffffff,
+
+  primary: #F97316,
+  secondary: #ff8c3f,
+  tertiary: #ffa361,
+  neutral: #ffffff,
+  neutral-variant: #fff5f0,
+  error: #ba1a1a,
+);
+
+// SUCCESS: Fresh Green (#10B981) - Achievement, growth, clean weeks
+$success-palette: (
+  0: #000000,
+  10: #002111,
+  20: #00391f,
+  25: #004527,
+  30: #00522f,
+  35: #006038,
+  40: #006e41,
+  50: #10B981,  // Main success color
+  60: #3dd598,
+  70: #5ce0ad,
+  80: #81f0c5,
+  90: #a7ffdb,
+  95: #c5ffe9,
+  98: #e5fff3,
+  99: #f4fffb,
+  100: #ffffff,
+
+  primary: #10B981,
+  secondary: #3dd598,
+  tertiary: #5ce0ad,
+  neutral: #ffffff,
+  neutral-variant: #f0fff9,
+  error: #ba1a1a,
+);
+
+// WARNING: Bright Yellow (#FBBF24) - Caution, mid-week checkpoint
+$warning-palette: (
+  0: #000000,
+  10: #1f1b00,
+  20: #342f00,
+  25: #3f3a00,
+  30: #4b4500,
+  35: #585100,
+  40: #655d00,
+  50: #FBBF24,  // Main warning color
+  60: #ffd54f,
+  70: #ffe066,
+  80: #ffeb8a,
+  90: #fff4b3,
+  95: #fffad4,
+  98: #fffdf0,
+  99: #fffefb,
+  100: #ffffff,
+
+  primary: #FBBF24,
+  secondary: #ffd54f,
+  tertiary: #ffe066,
+  neutral: #ffffff,
+  neutral-variant: #fffef5,
+  error: #ba1a1a,
+);
+
+// DANGER/ERROR: Bold Red (#EF4444) - Alerts, demotion track, errors
+$danger-palette: (
+  0: #000000,
+  10: #400003,
+  20: #680009,
+  25: #7f000f,
+  30: #960016,
+  35: #ae001d,
+  40: #c70025,
+  50: #EF4444,  // Main error color
+  60: #ff6961,
+  70: #ff897d,
+  80: #ffb4ab,
+  90: #ffdad6,
+  95: #ffedea,
+  98: #fff8f7,
+  99: #fffbff,
+  100: #ffffff,
+
+  primary: #EF4444,
+  secondary: #ff6961,
+  tertiary: #ff897d,
+  neutral: #ffffff,
+  neutral-variant: #fff5f5,
+  error: #EF4444,
+);
+
+// ========================================
+// Light Theme Configuration
+// ========================================
+
+$light-theme: mat.define-theme((
   color: (
+    theme-type: light,
     primary: $primary-palette,
-    accent: $accent-palette,
-    warn: $warn-palette,
+    tertiary: $accent-palette,
   ),
-  typography: mat.m2-define-typography-config(),
-  density: 0,
+  typography: (
+    brand-family: 'Inter, system-ui, -apple-system, sans-serif',
+    plain-family: 'Inter, system-ui, -apple-system, sans-serif',
+    bold-weight: 700,
+    medium-weight: 500,
+    regular-weight: 400,
+  ),
+  density: (
+    scale: 0,
+  ),
 ));
 
-@include mat.all-component-themes($light-theme);
+// ========================================
+// Dark Theme Configuration
+// ========================================
+
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: $primary-palette,
+    tertiary: $accent-palette,
+  ),
+  typography: (
+    brand-family: 'Inter, system-ui, -apple-system, sans-serif',
+    plain-family: 'Inter, system-ui, -apple-system, sans-serif',
+    bold-weight: 700,
+    medium-weight: 500,
+    regular-weight: 400,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// ========================================
+// Apply Themes
+// ========================================
+
+html {
+  @include mat.all-component-themes($light-theme);
+}
+
+// Dark mode (activated via .dark-theme class on html/body)
+html.dark-theme,
+body.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+}
+
+// ========================================
+// CSS Variables for Custom Usage
+// ========================================
+
+:root {
+  // Primary colors
+  --color-primary: #2563EB;
+  --color-primary-light: #4f7ef7;
+  --color-primary-lighter: #7199ff;
+  --color-primary-dark: #0041a8;
+
+  // Accent colors
+  --color-accent: #F97316;
+  --color-accent-light: #ff8c3f;
+  --color-accent-lighter: #ffa361;
+  --color-accent-dark: #ba3a00;
+
+  // Success colors
+  --color-success: #10B981;
+  --color-success-light: #3dd598;
+  --color-success-lighter: #5ce0ad;
+  --color-success-dark: #006e41;
+
+  // Warning colors
+  --color-warning: #FBBF24;
+  --color-warning-light: #ffd54f;
+  --color-warning-lighter: #ffe066;
+  --color-warning-dark: #655d00;
+
+  // Danger colors
+  --color-danger: #EF4444;
+  --color-danger-light: #ff6961;
+  --color-danger-lighter: #ff897d;
+  --color-danger-dark: #c70025;
+
+  // Neutral colors
+  --color-surface: #ffffff;
+  --color-surface-variant: #f5f5f5;
+  --color-surface-tint: #f0f9ff;
+  --color-on-surface: #1a1a1a;
+  --color-on-surface-variant: #666666;
+
+  // Tier colors (0-10 gradient)
+  --tier-0: #94a3b8;  // Slate
+  --tier-1: #60a5fa;  // Blue
+  --tier-2: #34d399;  // Green
+  --tier-3: #fbbf24;  // Yellow
+  --tier-4: #fb923c;  // Orange
+  --tier-5: #f87171;  // Red
+  --tier-6: #c084fc;  // Purple
+  --tier-7: #e879f9;  // Fuchsia
+  --tier-8: #fbbf24;  // Gold
+  --tier-9: #fb7185;  // Rose
+  --tier-10: #a78bfa; // Violet
+}
+
+// Dark theme CSS variables
+.dark-theme {
+  --color-surface: #1a1a1a;
+  --color-surface-variant: #2a2a2a;
+  --color-surface-tint: #0f172a;
+  --color-on-surface: #f5f5f5;
+  --color-on-surface-variant: #a3a3a3;
+}
+
+// ========================================
+// Accessibility Overrides
+// ========================================
+
+// Ensure WCAG AA compliance (4.5:1 contrast minimum)
+*:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary: #0041a8;
+    --color-accent: #ba3a00;
+    --color-success: #006e41;
+    --color-warning: #655d00;
+    --color-danger: #c70025;
+  }
+}
+
+// ========================================
+// Touch-Friendly Material Overrides
+// ========================================
+
+// Minimum 44px touch targets (WCAG 2.2 Level AA)
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-flat-button,
+.mat-mdc-stroked-button,
+.mat-mdc-icon-button,
+.mat-mdc-fab,
+.mat-mdc-mini-fab {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+// Card elevation for mobile
+.mat-mdc-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+// Enhanced button styles
+.mat-mdc-raised-button {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 200ms ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+  }
+}
+
+// Progress bars with gradients
+.mat-mdc-progress-bar {
+  border-radius: 8px;
+  overflow: hidden;
+
+  .mdc-linear-progress__bar-inner {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  }
+}
+
+// Enhanced form fields
+.mat-mdc-form-field {
+  .mdc-text-field {
+    border-radius: 12px;
+  }
+}
+
+// ========================================
+// Global Theming Utilities
+// ========================================
 
 html, body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
 }
 
-*:focus-visible {
-  outline: 2px solid mat.m2-get-color-from-palette($primary-palette, 500);
-  outline-offset: 2px;
-}
-
-.mat-mdc-button,
-.mat-mdc-raised-button,
-.mat-mdc-icon-button {
-  min-width: 44px;
-  min-height: 44px;
+// Smooth transitions for theme changes
+body {
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
 }
