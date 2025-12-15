@@ -28,6 +28,16 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      - name: Create Environment File
+        run: |
+          cat > src/environments/environment.ts << EOF
+          export const environment = {
+            production: true,
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}'
+          };
+          EOF
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 

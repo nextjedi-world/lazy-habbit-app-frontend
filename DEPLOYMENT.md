@@ -23,7 +23,7 @@
 
 ### Required Secrets
 
-To enable automatic deployment on push to `master`, add these secrets to your GitHub repository:
+To enable automatic deployment on push to `master`, add these **5 secrets** to your GitHub repository:
 
 1. **VERCEL_TOKEN**
    - Get from: https://vercel.com/account/tokens
@@ -34,6 +34,15 @@ To enable automatic deployment on push to `master`, add these secrets to your Gi
 
 3. **VERCEL_PROJECT_ID**
    - Value: `prj_comr5ecPFMRiS9uOfQWepGjP5yza`
+
+4. **SUPABASE_URL**
+   - Value: `https://mgifcqdadcsutrzsxmvk.supabase.co`
+   - Your Supabase project URL
+
+5. **SUPABASE_ANON_KEY**
+   - Value: Your Supabase anon/public key (JWT token)
+   - Get from: Supabase Dashboard → Settings → API → anon/public key
+   - Note: This key is safe for client-side use (protected by RLS)
 
 ### How to Add Secrets
 

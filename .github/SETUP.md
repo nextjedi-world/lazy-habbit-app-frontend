@@ -10,7 +10,7 @@ Two workflows are configured:
 
 ## Required GitHub Secrets
 
-You need to add three secrets to your GitHub repository:
+You need to add **five secrets** to your GitHub repository:
 
 ### 1. VERCEL_TOKEN
 
@@ -52,15 +52,42 @@ Your Vercel project ID.
 2. Go to Settings > General
 3. Copy the Project ID
 
+### 4. SUPABASE_URL
+
+Your Supabase project URL.
+
+**How to get it:**
+1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
+2. Select your project
+3. Go to Settings > API
+4. Copy the "Project URL" (format: `https://xxxxx.supabase.co`)
+
+### 5. SUPABASE_ANON_KEY
+
+Your Supabase anonymous/public API key.
+
+**How to get it:**
+1. Go to your [Supabase Dashboard](https://supabase.com/dashboard)
+2. Select your project
+3. Go to Settings > API
+4. Copy the "anon" or "public" key (it's a JWT token)
+
+**Important Notes:**
+- This key is safe for client-side use (it's public by design)
+- It's protected by Row-Level Security (RLS) policies in your database
+- Never use the `service_role` key in client-side code (that one must stay secret)
+
 ## Adding Secrets to GitHub
 
 1. Go to your GitHub repository
 2. Navigate to **Settings** > **Secrets and variables** > **Actions**
 3. Click **New repository secret**
-4. Add each of the three secrets:
-   - Name: `VERCEL_TOKEN`, Value: [your token]
+4. Add each of the five secrets:
+   - Name: `VERCEL_TOKEN`, Value: [your Vercel token]
    - Name: `VERCEL_ORG_ID`, Value: [your org ID]
    - Name: `VERCEL_PROJECT_ID`, Value: [your project ID]
+   - Name: `SUPABASE_URL`, Value: [your Supabase project URL]
+   - Name: `SUPABASE_ANON_KEY`, Value: [your Supabase anon key]
 
 ## Verifying Setup
 
