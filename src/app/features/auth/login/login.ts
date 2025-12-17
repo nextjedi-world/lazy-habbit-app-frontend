@@ -56,4 +56,16 @@ export class LoginComponent {
       this.loading.set(false);
     }
   }
+
+  async signInWithGoogle(): Promise<void> {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    try {
+      await this.authService.signInWithGoogle();
+    } catch (error) {
+      this.errorMessage.set(error instanceof Error ? error.message : 'Google sign-in failed');
+      this.loading.set(false);
+    }
+  }
 }

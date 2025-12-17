@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase';
+import { DateUtilsService } from './date-utils';
 import { DailyLog } from '../models/log.model';
 
 @Injectable({
@@ -7,6 +8,7 @@ import { DailyLog } from '../models/log.model';
 })
 export class LoggingService {
   private supabase = inject(SupabaseService);
+  private dateUtils = inject(DateUtilsService);
 
   // State signals
   private todayLogsSignal = signal<DailyLog[]>([]);
@@ -18,20 +20,18 @@ export class LoggingService {
   error = this.errorSignal.asReadonly();
 
   /**
-   * Get today's date in YYYY-MM-DD format
-   */
-  private getTodayDate(): string {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  /**
    * Load today's logs
    */
   async loadTodayLogs(userId: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     this.errorSignal.set(null);
 
     try {
-      const today = this.getTodayDate();
+      const today = this.dateUtils.getTodayISO();
 
       const { data, error } = await this.supabase.client
         .from('daily_logs')
@@ -65,10 +65,18 @@ export class LoggingService {
    * Log task completion (ONE-TAP LOGGING)
    */
   async logTaskCompletion(userId: string, taskId: number): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!taskId || typeof taskId !== 'number' || taskId <= 0) {
+      throw new Error('Invalid task ID: must be a positive number');
+    }
+
     this.errorSignal.set(null);
 
     try {
-      const today = this.getTodayDate();
+      const today = this.dateUtils.getTodayISO();
 
       // Insert log
       const { data, error } = await this.supabase.client
@@ -117,10 +125,18 @@ export class LoggingService {
    * Undo task completion (only works for today's logs)
    */
   async undoTaskCompletion(userId: string, taskId: number): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!taskId || typeof taskId !== 'number' || taskId <= 0) {
+      throw new Error('Invalid task ID: must be a positive number');
+    }
+
     this.errorSignal.set(null);
 
     try {
-      const today = this.getTodayDate();
+      const today = this.dateUtils.getTodayISO();
 
       // Find the most recent log for this task today
       const log = this.todayLogsSignal()

@@ -1,6 +1,5 @@
 .dashboard-container {
   min-height: 100vh;
-  padding-bottom: 80px; // Space for bottom nav
   background: var(--mat-sys-surface);
 }
 
@@ -75,6 +74,21 @@
 
 @media (min-width: 1024px) {
   .task-list-container {
-    max-width: 1000px;
+    max-width: 1200px;
+    padding: 32px;
+
+    // Multi-column grid layout for category cards
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    align-items: start;
+
+    &.has-summary {
+      padding-top: 24px;
+    }
+  }
+
+  .empty-state {
+    grid-column: 1 / -1; // Span all columns
   }
 }

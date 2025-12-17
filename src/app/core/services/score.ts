@@ -159,18 +159,28 @@ export class ScoreService {
     try {
       const tierTrack = this.determineTierTrack(scoreData.overallScore, scoreData.categoryScores);
 
+      // Round all scores to 2 decimal places (database uses DECIMAL(3,2))
+      const roundedCategoryScores = scoreData.categoryScores.map(cat => ({
+        ...cat,
+        hourScore: Number(cat.hourScore.toFixed(2)),
+        taskScore: Number(cat.taskScore.toFixed(2)),
+        overallScore: Number(cat.overallScore.toFixed(2))
+      }));
+
       const { data, error } = await this.supabase.client
         .from('weekly_scores')
         .upsert({
           user_id: userId,
           plan_id: planId,
           week_start_date: weekStartDate,
-          hour_score: scoreData.hourScore,
-          task_score: scoreData.taskScore,
-          overall_score: scoreData.overallScore,
-          category_scores: scoreData.categoryScores,
+          hour_score: Number(scoreData.hourScore.toFixed(2)),
+          task_score: Number(scoreData.taskScore.toFixed(2)),
+          overall_score: Number(scoreData.overallScore.toFixed(2)),
+          category_scores: roundedCategoryScores,
           is_clean: scoreData.isClean,
           tier_track: tierTrack,
+        }, {
+          onConflict: 'user_id,week_start_date'  // Specify unique constraint columns for upsert
         })
         .select()
         .single();
@@ -187,6 +197,14 @@ export class ScoreService {
    * Load recent scores for tier track calculation
    */
   async loadRecentScores(userId: string, limit = 3): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (typeof limit !== 'number' || limit < 1 || limit > 100) {
+      throw new Error('Invalid limit: must be a number between 1 and 100');
+    }
+
     this.errorSignal.set(null);
 
     try {
@@ -240,6 +258,14 @@ export class ScoreService {
    * Load score for specific week
    */
   async loadScoreForWeek(userId: string, weekStartDate: string): Promise<WeeklyScore | null> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!weekStartDate || typeof weekStartDate !== 'string') {
+      throw new Error('Invalid week start date: must be a non-empty string');
+    }
+
     try {
       const { data, error } = await this.supabase.client
         .from('weekly_scores')
@@ -252,6 +278,34 @@ export class ScoreService {
       return data;
     } catch (err) {
       this.errorSignal.set(err instanceof Error ? err.message : 'Failed to load score');
+      throw err;
+    }
+  }
+
+  /**
+   * Load all scores for a user (for statistics calculation)
+   * @param userId - User ID
+   * @returns Array of all weekly scores ordered by date (newest first)
+   */
+  async loadAllScores(userId: string): Promise<WeeklyScore[]> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
+    this.errorSignal.set(null);
+
+    try {
+      const { data, error } = await this.supabase.client
+        .from('weekly_scores')
+        .select('*')
+        .eq('user_id', userId)
+        .order('week_start_date', { ascending: false });
+
+      if (error) throw error;
+      return data ?? [];
+    } catch (err) {
+      this.errorSignal.set(err instanceof Error ? err.message : 'Failed to load scores');
       throw err;
     }
   }

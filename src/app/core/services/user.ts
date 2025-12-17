@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { SupabaseService } from './supabase';
+import { Logger } from './logger';
 import { UserProfile, Category, TierHistory } from '../models/user.model';
 
 @Injectable({
@@ -7,6 +8,7 @@ import { UserProfile, Category, TierHistory } from '../models/user.model';
 })
 export class UserService {
   private supabase = inject(SupabaseService);
+  private logger = inject(Logger);
 
   // State signals
   private profileSignal = signal<UserProfile | null>(null);
@@ -59,18 +61,18 @@ export class UserService {
         .single();
 
       if (createError || !newProfile) {
-        console.error('Failed to create profile:', createError);
+        this.logger.error('Failed to create profile:', createError);
         throw new Error('Failed to create user profile. Please contact support.');
       }
 
-      console.log('Profile created successfully for user:', userId);
+      this.logger.log('Profile created successfully for user:', userId);
 
       // Create default categories for new user
       await this.createDefaultCategories(userId);
 
       return newProfile;
     } catch (err) {
-      console.error('Error ensuring profile exists:', err);
+      this.logger.error('Error ensuring profile exists:', err);
       throw err;
     }
   }
@@ -79,6 +81,11 @@ export class UserService {
    * Load user profile from database
    */
   async loadProfile(userId: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
@@ -97,6 +104,11 @@ export class UserService {
    * Load user categories
    */
   async loadCategories(userId: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     this.errorSignal.set(null);
 
     try {
@@ -161,6 +173,17 @@ export class UserService {
    * Update user tier
    */
   async updateTier(userId: string, newTier: number, reason: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (typeof newTier !== 'number' || newTier < 0 || newTier > 10) {
+      throw new Error('Invalid tier: must be a number between 0 and 10');
+    }
+    if (!reason || typeof reason !== 'string') {
+      throw new Error('Invalid reason: must be a non-empty string');
+    }
+
     try {
       const oldTier = this.profileSignal()?.current_tier ?? 0;
 
@@ -202,6 +225,11 @@ export class UserService {
    * Load tier history
    */
   async loadTierHistory(userId: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     try {
       const { data, error } = await this.supabase.client
         .from('tier_history')
@@ -221,6 +249,14 @@ export class UserService {
    * Update user profile
    */
   async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!updates || typeof updates !== 'object' || Object.keys(updates).length === 0) {
+      throw new Error('Invalid updates: must be a non-empty object');
+    }
+
     try {
       const { data, error } = await this.supabase.client
         .from('profiles')

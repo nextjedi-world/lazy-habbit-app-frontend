@@ -1,5 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase';
+import { DateUtilsService } from './date-utils';
+import { Logger } from './logger';
 import { WeeklyPlan, PlannedTask, PlannedTaskWithCategory } from '../models/plan.model';
 
 @Injectable({
@@ -7,6 +9,8 @@ import { WeeklyPlan, PlannedTask, PlannedTaskWithCategory } from '../models/plan
 })
 export class PlanService {
   private supabase = inject(SupabaseService);
+  private dateUtils = inject(DateUtilsService);
+  private logger = inject(Logger);
 
   // State signals
   private activePlanSignal = signal<WeeklyPlan | null>(null);
@@ -22,19 +26,21 @@ export class PlanService {
 
   /**
    * Get Monday of current week
+   * @deprecated Use DateUtilsService.getWeekStartISO() instead
    */
   private getWeekStart(date = new Date()): string {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    d.setDate(diff);
-    return d.toISOString().split('T')[0];
+    return this.dateUtils.getWeekStartISO(date);
   }
 
   /**
    * Load active plan for current week
    */
   async loadActivePlan(userId: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
@@ -72,6 +78,11 @@ export class PlanService {
    * Load planned tasks for a plan
    */
   async loadPlannedTasks(planId: number): Promise<void> {
+    // Input validation
+    if (!planId || typeof planId !== 'number' || planId <= 0) {
+      throw new Error('Invalid plan ID: must be a positive number');
+    }
+
     this.errorSignal.set(null);
 
     try {
@@ -126,13 +137,13 @@ export class PlanService {
         });
 
       if (createError) {
-        console.error('Failed to create profile:', createError);
+        this.logger.error('Failed to create profile:', createError);
         throw new Error('Failed to create user profile. Please contact support.');
       }
 
-      console.log('Profile created successfully for user:', userId);
+      this.logger.log('Profile created successfully for user:', userId);
     } catch (err) {
-      console.error('Error ensuring profile exists:', err);
+      this.logger.error('Error ensuring profile exists:', err);
       throw err;
     }
   }
@@ -141,6 +152,11 @@ export class PlanService {
    * Create new weekly plan
    */
   async createPlan(userId: string): Promise<WeeklyPlan> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     this.errorSignal.set(null);
 
     try {
@@ -215,12 +231,17 @@ export class PlanService {
    * Repeat last week's plan (primary UX flow)
    */
   async repeatLastWeek(userId: string): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     try {
       // Get last week's plan
-      const lastWeekStart = this.getWeekStart(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+      const lastWeekStart = this.dateUtils.getLastWeekStartISO();
 
       const { data: lastPlan, error: planError } = await this.supabase.client
         .from('weekly_plans')
@@ -274,6 +295,11 @@ export class PlanService {
    * Remove task from plan
    */
   async removeTask(taskId: number): Promise<void> {
+    // Input validation
+    if (!taskId || typeof taskId !== 'number' || taskId <= 0) {
+      throw new Error('Invalid task ID: must be a positive number');
+    }
+
     this.errorSignal.set(null);
 
     try {
@@ -297,6 +323,11 @@ export class PlanService {
    * Complete current plan (called on Sunday)
    */
   async completePlan(planId: number): Promise<void> {
+    // Input validation
+    if (!planId || typeof planId !== 'number' || planId <= 0) {
+      throw new Error('Invalid plan ID: must be a positive number');
+    }
+
     this.errorSignal.set(null);
 
     try {
@@ -313,6 +344,43 @@ export class PlanService {
       }
     } catch (err) {
       this.errorSignal.set(err instanceof Error ? err.message : 'Failed to complete plan');
+      throw err;
+    }
+  }
+
+  /**
+   * Check if a plan exists for a specific week
+   * @param userId - User ID to check
+   * @param weekStartDate - Week start date in ISO format (YYYY-MM-DD)
+   * @returns Plan data if exists, null otherwise
+   */
+  async checkPlanExists(userId: string, weekStartDate: string): Promise<WeeklyPlan | null> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!weekStartDate || typeof weekStartDate !== 'string') {
+      throw new Error('Invalid week start date: must be a non-empty string');
+    }
+
+    this.errorSignal.set(null);
+
+    try {
+      const { data, error } = await this.supabase.client
+        .from('weekly_plans')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('week_start_date', weekStartDate)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        // PGRST116 is "not found" error - this is expected
+        throw error;
+      }
+
+      return data ?? null;
+    } catch (err) {
+      this.errorSignal.set(err instanceof Error ? err.message : 'Failed to check plan existence');
       throw err;
     }
   }

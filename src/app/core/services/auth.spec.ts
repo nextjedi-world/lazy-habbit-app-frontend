@@ -169,4 +169,27 @@ describe('AuthService', () => {
       }).toThrow();
     });
   });
+
+  describe('subscription cleanup', () => {
+    it('should unsubscribe from auth state changes when service is destroyed', async () => {
+      // Wait for initialization to complete
+      await service.waitForInit();
+
+      // Get the mock subscription that was returned
+      const mockSubscription = supabaseMock.onAuthStateChange().data.subscription;
+
+      // Destroy the TestBed, which triggers DestroyRef callbacks
+      TestBed.resetTestingModule();
+
+      // Verify that unsubscribe was called
+      expect(mockSubscription.unsubscribe).toHaveBeenCalled();
+    });
+
+    it('should set up auth state listener during initialization', async () => {
+      await service.waitForInit();
+
+      // Verify that onAuthStateChange was called during initialization
+      expect(supabaseMock.onAuthStateChange).toHaveBeenCalled();
+    });
+  });
 });

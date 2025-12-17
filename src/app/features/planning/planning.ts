@@ -9,6 +9,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TaskFormComponent, TaskFormData } from './components/task-form/task-form';
 import { PlanService } from '../../core/services/plan';
 import { AuthService } from '../../core/services/auth';
+import { DateUtilsService } from '../../core/services/date-utils';
+import { Logger } from '../../core/services/logger';
 import { Category } from '../../core/models/user.model';
 
 interface TaskInput extends TaskFormData {
@@ -36,14 +38,24 @@ export class PlanningComponent implements OnInit {
   // Services
   private readonly planService = inject(PlanService);
   private readonly authService = inject(AuthService);
+  private readonly dateUtils = inject(DateUtilsService);
+  private readonly logger = inject(Logger);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
 
   // State signals
   loading = signal(false);
   hasLastWeekPlan = signal(false);
+  hasActivePlan = signal(false);
   tasks = signal<TaskInput[]>([]);
   showFAB = signal(true);
+
+  // Auto-save draft state
+  draftSaved = signal(false);
+  draftSaving = signal(false);
+  private autoSaveTimer: any = null;
+  private readonly DRAFT_KEY = 'planning_draft';
+  private readonly AUTO_SAVE_DELAY = 1000; // 1 second debounce
 
   // Default categories (6 categories as per spec)
   categories = signal<Category[]>([
@@ -72,8 +84,77 @@ export class PlanningComponent implements OnInit {
 
   hasTasks = computed(() => this.tasks().length > 0);
 
+  // Computed: Can user edit plan?
+  canEdit = computed(() => {
+    return !this.hasActivePlan();
+  });
+
+  // Computed: Message to display when editing is blocked
+  restrictionMessage = computed(() => {
+    if (this.hasActivePlan()) {
+      return 'You already have an active plan for this week. Plans cannot be edited mid-week.';
+    }
+    return '';
+  });
+
   async ngOnInit() {
-    await this.checkLastWeekPlan();
+    try {
+      this.loading.set(true);
+
+      // Check for active plan
+      await this.checkActivePlan();
+
+      // Check if user has a plan from last week
+      await this.checkLastWeekPlan();
+
+      // Restore draft if available and no active plan
+      if (!this.hasActivePlan() && this.canEdit()) {
+        this.restoreDraft();
+      }
+    } catch (error) {
+      this.logger.error('Failed to load planning data:', error);
+
+      const snackBarRef = this.snackBar.open(
+        'Failed to load planning data. Please try again.',
+        'Retry',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        }
+      );
+
+      snackBarRef.onAction().subscribe(() => {
+        this.ngOnInit(); // Retry on button click
+      });
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clear auto-save timer on component destroy
+    if (this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+    }
+  }
+
+  /**
+   * Check if user already has an active plan for this week
+   * CRITICAL BUSINESS RULE: Cannot create/edit if active plan exists
+   */
+  private async checkActivePlan(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (!user) return;
+
+    try {
+      const weekStart = this.dateUtils.getWeekStartISO();
+      const data = await this.planService.checkPlanExists(user.id, weekStart);
+      this.hasActivePlan.set(!!data);
+    } catch (err) {
+      this.hasActivePlan.set(false);
+    }
   }
 
   /**
@@ -85,13 +166,8 @@ export class PlanningComponent implements OnInit {
 
     try {
       // Get last week's plan
-      const lastWeekStart = this.getWeekStart(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-      const { data } = await this.planService['supabase'].client
-        .from('weekly_plans')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('week_start_date', lastWeekStart)
-        .single();
+      const lastWeekStart = this.dateUtils.getLastWeekStartISO();
+      const data = await this.planService.checkPlanExists(user.id, lastWeekStart);
 
       this.hasLastWeekPlan.set(!!data);
     } catch (err) {
@@ -99,16 +175,6 @@ export class PlanningComponent implements OnInit {
     }
   }
 
-  /**
-   * Get Monday of given week
-   */
-  private getWeekStart(date = new Date()): string {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setDate(diff);
-    return d.toISOString().split('T')[0];
-  }
 
   /**
    * Repeat last week's plan (one-tap feature)
@@ -155,6 +221,9 @@ export class PlanningComponent implements OnInit {
       isValid: false,
     };
     this.tasks.update(tasks => [...tasks, newTask]);
+
+    // Trigger auto-save after adding task
+    this.scheduleDraftSave();
   }
 
   /**
@@ -166,6 +235,9 @@ export class PlanningComponent implements OnInit {
     if (this.tasks().length === 0) {
       this.showFAB.set(true);
     }
+
+    // Trigger auto-save after removing task
+    this.scheduleDraftSave();
   }
 
   /**
@@ -177,6 +249,9 @@ export class PlanningComponent implements OnInit {
       updated[index] = { ...taskData, isValid: true };
       return updated;
     });
+
+    // Trigger auto-save after task change
+    this.scheduleDraftSave();
   }
 
   /**
@@ -212,6 +287,9 @@ export class PlanningComponent implements OnInit {
 
       await Promise.all(taskPromises);
 
+      // Clear draft after successful save
+      this.clearDraft();
+
       this.snackBar.open('Weekly plan created successfully!', 'Close', { duration: 3000 });
       await this.router.navigate(['/dashboard']);
     } catch (err) {
@@ -219,6 +297,112 @@ export class PlanningComponent implements OnInit {
       this.snackBar.open(message, 'Close', { duration: 5000 });
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /**
+   * Schedule auto-save with debouncing
+   * Prevents excessive localStorage writes
+   */
+  private scheduleDraftSave(): void {
+    // Clear existing timer
+    if (this.autoSaveTimer) {
+      clearTimeout(this.autoSaveTimer);
+    }
+
+    // Set new timer
+    this.autoSaveTimer = setTimeout(() => {
+      this.saveDraft();
+    }, this.AUTO_SAVE_DELAY);
+  }
+
+  /**
+   * Save current planning state to localStorage
+   */
+  private saveDraft(): void {
+    try {
+      this.draftSaving.set(true);
+
+      const draft = {
+        tasks: this.tasks(),
+        timestamp: new Date().toISOString(),
+        weekStart: this.dateUtils.getWeekStartISO()
+      };
+
+      localStorage.setItem(this.DRAFT_KEY, JSON.stringify(draft));
+
+      this.draftSaved.set(true);
+      this.logger.log('Draft saved to localStorage');
+
+      // Reset saved indicator after 2 seconds
+      setTimeout(() => {
+        this.draftSaved.set(false);
+      }, 2000);
+    } catch (error) {
+      this.logger.error('Failed to save draft:', error);
+    } finally {
+      this.draftSaving.set(false);
+    }
+  }
+
+  /**
+   * Restore draft from localStorage
+   */
+  private restoreDraft(): void {
+    try {
+      const draftJson = localStorage.getItem(this.DRAFT_KEY);
+
+      if (!draftJson) {
+        this.logger.log('No draft found in localStorage');
+        return;
+      }
+
+      const draft = JSON.parse(draftJson);
+
+      // Check if draft is for current week
+      const currentWeekStart = this.dateUtils.getWeekStartISO();
+      if (draft.weekStart !== currentWeekStart) {
+        this.logger.log('Draft is for a different week, clearing it');
+        this.clearDraft();
+        return;
+      }
+
+      // Restore tasks from draft
+      if (draft.tasks && Array.isArray(draft.tasks) && draft.tasks.length > 0) {
+        this.tasks.set(draft.tasks);
+        this.logger.log('Draft restored from localStorage');
+
+        this.snackBar.open(
+          'Draft restored from previous session',
+          'Clear',
+          {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom'
+          }
+        ).onAction().subscribe(() => {
+          this.clearDraft();
+          this.tasks.set([]);
+          this.snackBar.open('Draft cleared', 'Close', { duration: 2000 });
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to restore draft:', error);
+      // Clear corrupted draft
+      this.clearDraft();
+    }
+  }
+
+  /**
+   * Clear draft from localStorage
+   */
+  private clearDraft(): void {
+    try {
+      localStorage.removeItem(this.DRAFT_KEY);
+      this.draftSaved.set(false);
+      this.logger.log('Draft cleared from localStorage');
+    } catch (error) {
+      this.logger.error('Failed to clear draft:', error);
     }
   }
 }

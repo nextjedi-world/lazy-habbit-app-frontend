@@ -2,19 +2,33 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
+  // Legal pages (public, no auth required) - MUST be first!
+  {
+    path: 'privacy-policy',
+    loadComponent: () => import('./features/legal/privacy-policy/privacy-policy').then(m => m.PrivacyPolicyComponent),
+  },
+  {
+    path: 'terms-of-service',
+    loadComponent: () => import('./features/legal/terms-of-service/terms-of-service').then(m => m.TermsOfServiceComponent),
+  },
+
   {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full',
   },
+
+  // Auth routes under /auth prefix
   {
-    path: 'login',
+    path: 'auth/login',
     loadComponent: () => import('./features/auth/login/login').then(m => m.LoginComponent),
   },
   {
-    path: 'register',
+    path: 'auth/register',
     loadComponent: () => import('./features/auth/register/register').then(m => m.RegisterComponent),
   },
+
+  // Protected routes
   {
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
@@ -35,6 +49,20 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profile/profile').then(m => m.ProfileComponent),
     canActivate: [authGuard],
   },
+
+  // Redirect legacy paths for compatibility
+  {
+    path: 'login',
+    redirectTo: '/auth/login',
+    pathMatch: 'full',
+  },
+  {
+    path: 'register',
+    redirectTo: '/auth/register',
+    pathMatch: 'full',
+  },
+
+  // 404 fallback
   {
     path: '**',
     redirectTo: '/dashboard',

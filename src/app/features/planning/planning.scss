@@ -84,6 +84,46 @@
   }
 }
 
+// Restriction Card (Mid-week edit blocked)
+.restriction-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+  border: 2px solid #f39c12;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+
+  .restriction-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    color: #e67e22;
+    flex-shrink: 0;
+  }
+
+  .restriction-content {
+    flex: 1;
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #d35400;
+    }
+
+    p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #e67e22;
+      font-weight: 500;
+    }
+  }
+}
+
 // Action Section (Repeat Last Week / Start Fresh)
 .action-section {
   display: flex;
@@ -205,11 +245,15 @@
 // Floating Action Button
 .fab-add-task {
   position: fixed;
-  bottom: 6rem;
+  bottom: 13rem; // Above save section + bottom nav
   right: 2rem;
   z-index: 100;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+
+  @media (min-width: 1024px) {
+    bottom: 8rem; // Above save section on desktop
+  }
 
   &:hover:not([disabled]) {
     transform: scale(1.1);
@@ -224,7 +268,7 @@
 // Save Section (sticky bottom)
 .save-section {
   position: fixed;
-  bottom: 0;
+  bottom: 80px; // Above bottom nav on mobile
   left: 0;
   right: 0;
   background: white;
@@ -235,6 +279,43 @@
   align-items: center;
   gap: 0.5rem;
   z-index: 99;
+
+  @media (min-width: 1024px) {
+    bottom: 0; // At bottom on desktop (no bottom nav)
+  }
+
+  .draft-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #718096;
+    margin-bottom: 0.5rem;
+
+    .draft-icon {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+
+      &.saving {
+        color: #667eea;
+        animation: rotate 1s linear infinite;
+      }
+
+      &.saved {
+        color: #48bb78;
+      }
+    }
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
   .save-btn {
     width: 100%;
@@ -293,7 +374,7 @@
   }
 
   .fab-add-task {
-    bottom: 5.5rem;
+    bottom: 12rem; // Above save section + bottom nav on mobile
     right: 1rem;
   }
 

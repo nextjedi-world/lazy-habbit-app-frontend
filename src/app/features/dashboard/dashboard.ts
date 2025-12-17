@@ -9,12 +9,13 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LoggingService } from '../../core/services/logging';
 import { PlanService } from '../../core/services/plan';
 import { SupabaseService } from '../../core/services/supabase';
+import { DateUtilsService } from '../../core/services/date-utils';
+import { Logger } from '../../core/services/logger';
 import { PlannedTaskWithCategory } from '../../core/models/plan.model';
 import { Category } from '../../core/models/user.model';
 
 import { WeekSummaryComponent } from './components/week-summary/week-summary';
 import { CategorySectionComponent } from './components/category-section/category-section';
-import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav';
 
 interface CategoryGroup {
   category: Category;
@@ -46,8 +47,7 @@ interface WeekSummary {
     MatIconModule,
     MatSnackBarModule,
     WeekSummaryComponent,
-    CategorySectionComponent,
-    BottomNavComponent
+    CategorySectionComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
@@ -57,6 +57,8 @@ export class DashboardComponent implements OnInit {
   private readonly loggingService = inject(LoggingService);
   private readonly planService = inject(PlanService);
   private readonly supabaseService = inject(SupabaseService);
+  private readonly dateUtils = inject(DateUtilsService);
+  private readonly logger = inject(Logger);
   private readonly snackBar = inject(MatSnackBar);
   private readonly router = inject(Router);
 
@@ -64,55 +66,80 @@ export class DashboardComponent implements OnInit {
   loading = signal(false);
   tasks = signal<PlannedTaskWithCategory[]>([]);
   hasActivePlan = signal(false);
+  taskLoading = signal<Record<number, boolean>>({});  // Track loading state per task
+  private taskToggleInProgress = new Set<number>();    // Prevent duplicate toggles
 
   // Computed values
   tasksByCategory = computed(() => this.groupByCategory(this.tasks()));
   weekSummary = computed(() => this.calculateWeekSummary(this.tasks()));
 
   async ngOnInit() {
-    await this.loadWeeklyPlan();
-  }
-
-  /**
-   * Load current week's plan with tasks
-   */
-  async loadWeeklyPlan() {
-    this.loading.set(true);
     try {
-      const user = await this.supabaseService.getCurrentUser();
-      if (!user) {
-        this.router.navigate(['/auth/login']);
-        return;
-      }
-
-      // Load active plan
-      await this.planService.loadActivePlan(user.id);
-      const activePlan = this.planService.activePlan();
-
-      if (activePlan) {
-        this.hasActivePlan.set(true);
-        // Get tasks from plan service
-        const plannedTasks = this.planService.plannedTasks();
-        this.tasks.set(plannedTasks);
-
-        // Load today's logs
-        await this.loggingService.loadTodayLogs(user.id);
-      } else {
-        this.hasActivePlan.set(false);
-        this.tasks.set([]);
-      }
+      this.loading.set(true);
+      await this.loadWeeklyPlan();
     } catch (error) {
-      console.error('Failed to load weekly plan:', error);
-      this.snackBar.open('Failed to load weekly plan', 'Dismiss', { duration: 3000 });
+      this.logger.error('Failed to load dashboard data:', error);
+
+      const snackBarRef = this.snackBar.open(
+        'Failed to load dashboard data. Please try again.',
+        'Retry',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        }
+      );
+
+      snackBarRef.onAction().subscribe(() => {
+        this.ngOnInit(); // Retry on button click
+      });
     } finally {
       this.loading.set(false);
     }
   }
 
   /**
+   * Load current week's plan with tasks
+   */
+  async loadWeeklyPlan() {
+    const user = await this.supabaseService.getCurrentUser();
+    if (!user) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    // Load active plan
+    await this.planService.loadActivePlan(user.id);
+    const activePlan = this.planService.activePlan();
+
+    if (activePlan) {
+      this.hasActivePlan.set(true);
+      // Get tasks from plan service
+      const plannedTasks = this.planService.plannedTasks();
+      this.tasks.set(plannedTasks);
+
+      // Load today's logs
+      await this.loggingService.loadTodayLogs(user.id);
+    } else {
+      this.hasActivePlan.set(false);
+      this.tasks.set([]);
+    }
+  }
+
+  /**
    * Toggle task completion (ONE-TAP LOGGING)
+   * Includes debouncing and loading state
    */
   async toggleTask(taskId: number) {
+    // Debounce: Prevent duplicate clicks
+    if (this.taskToggleInProgress.has(taskId)) {
+      return;
+    }
+
+    this.taskToggleInProgress.add(taskId);
+    this.taskLoading.update(state => ({ ...state, [taskId]: true }));
+
     try {
       const user = await this.supabaseService.getCurrentUser();
       if (!user) return;
@@ -143,8 +170,12 @@ export class DashboardComponent implements OnInit {
       // Reload plan to update completed counts
       await this.loadWeeklyPlan();
     } catch (error) {
-      console.error('Failed to toggle task:', error);
+      this.logger.error('Failed to toggle task:', error);
       this.snackBar.open('Failed to update task', 'Dismiss', { duration: 3000 });
+    } finally {
+      // Cleanup: Remove loading state and debounce lock
+      this.taskLoading.update(state => ({ ...state, [taskId]: false }));
+      this.taskToggleInProgress.delete(taskId);
     }
   }
 
@@ -152,6 +183,8 @@ export class DashboardComponent implements OnInit {
    * Undo task log (called from snackbar action)
    */
   async undoTaskLog(taskId: number) {
+    this.taskLoading.update(state => ({ ...state, [taskId]: true }));
+
     try {
       const user = await this.supabaseService.getCurrentUser();
       if (!user) return;
@@ -159,8 +192,10 @@ export class DashboardComponent implements OnInit {
       await this.loggingService.undoTaskCompletion(user.id, taskId);
       await this.loadWeeklyPlan();
     } catch (error) {
-      console.error('Failed to undo task:', error);
+      this.logger.error('Failed to undo task:', error);
       this.snackBar.open('Failed to undo task', 'Dismiss', { duration: 3000 });
+    } finally {
+      this.taskLoading.update(state => ({ ...state, [taskId]: false }));
     }
   }
 
@@ -221,8 +256,8 @@ export class DashboardComponent implements OnInit {
    * Calculate week summary
    */
   private calculateWeekSummary(tasks: PlannedTaskWithCategory[]): WeekSummary {
-    const weekStart = this.getWeekStart();
-    const weekEnd = this.getWeekEnd(weekStart);
+    const weekStart = this.dateUtils.getWeekRangeString().split(' - ')[0];
+    const weekEnd = this.dateUtils.getWeekRangeString().split(' - ')[1];
 
     let completedHours = 0;
     let totalHours = 0;
@@ -251,24 +286,4 @@ export class DashboardComponent implements OnInit {
     };
   }
 
-  /**
-   * Get Monday of current week
-   */
-  private getWeekStart(date = new Date()): string {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setDate(diff);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-
-  /**
-   * Get Sunday of current week
-   */
-  private getWeekEnd(weekStart: string): string {
-    const start = new Date(weekStart);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    return end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
 }

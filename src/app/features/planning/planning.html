@@ -8,6 +8,17 @@
     </div>
   </header>
 
+  <!-- Restriction Message (Mid-week edit blocked) -->
+  @if (!canEdit()) {
+    <mat-card class="restriction-card" role="alert" aria-live="polite">
+      <mat-icon class="restriction-icon">lock</mat-icon>
+      <div class="restriction-content">
+        <h3>Planning Restricted</h3>
+        <p>{{ restrictionMessage() }}</p>
+      </div>
+    </mat-card>
+  }
+
   <!-- Loading Spinner -->
   @if (loading()) {
     <div class="loading-overlay">
@@ -17,7 +28,7 @@
   }
 
   <!-- Primary Action Buttons (if last week plan exists) -->
-  @if (hasLastWeekPlan() && !hasTasks()) {
+  @if (hasLastWeekPlan() && !hasTasks() && canEdit()) {
     <section class="action-section" aria-label="Quick actions">
       <button
         mat-raised-button
@@ -41,12 +52,12 @@
   }
 
   <!-- Empty State (no tasks) -->
-  @if (!hasTasks() && !hasLastWeekPlan()) {
+  @if (!hasTasks() && !hasLastWeekPlan() && canEdit()) {
     <div class="empty-state">
       <mat-icon class="empty-icon">event_note</mat-icon>
       <h2>Create Your First Weekly Plan</h2>
       <p>Build your week by adding tasks below. Set goals, track progress, and achieve more!</p>
-      <button mat-raised-button color="primary" (click)="addTask()">
+      <button mat-raised-button color="primary" (click)="addTask()" [disabled]="!canEdit()">
         <mat-icon>add</mat-icon>
         Add Your First Task
       </button>
@@ -68,27 +79,40 @@
   }
 
   <!-- Floating Action Button (Add Task) -->
-  @if (hasTasks()) {
+  @if (hasTasks() && canEdit()) {
     <button
       mat-fab
       color="accent"
       class="fab-add-task"
       (click)="addTask()"
       [attr.aria-label]="'Add task ' + (tasks().length + 1)"
-      [disabled]="loading()">
+      [disabled]="loading() || !canEdit()">
       <mat-icon>add</mat-icon>
     </button>
   }
 
   <!-- Save Button (sticky bottom) -->
-  @if (hasTasks()) {
+  @if (hasTasks() && canEdit()) {
     <div class="save-section">
+      <!-- Auto-save indicator -->
+      @if (draftSaving() || draftSaved()) {
+        <div class="draft-indicator" role="status" aria-live="polite">
+          @if (draftSaving()) {
+            <mat-icon class="draft-icon saving">sync</mat-icon>
+            <span>Saving draft...</span>
+          } @else if (draftSaved()) {
+            <mat-icon class="draft-icon saved">check_circle</mat-icon>
+            <span>Draft saved</span>
+          }
+        </div>
+      }
+
       <button
         mat-raised-button
         color="primary"
         class="save-btn"
         (click)="savePlan()"
-        [disabled]="!isFormValid() || loading()">
+        [disabled]="!isFormValid() || loading() || !canEdit()">
         <mat-icon>save</mat-icon>
         Save Weekly Plan
       </button>

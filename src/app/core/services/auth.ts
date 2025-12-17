@@ -1,6 +1,7 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from './supabase';
+import { Logger } from './logger';
 import { User } from '@supabase/supabase-js';
 
 @Injectable({
@@ -9,6 +10,8 @@ import { User } from '@supabase/supabase-js';
 export class AuthService {
   private readonly supabase = inject(SupabaseService);
   private readonly router = inject(Router);
+  private readonly logger = inject(Logger);
+  private readonly destroyRef = inject(DestroyRef);
 
   private _currentUser = signal<User | null>(null);
   readonly currentUser = this._currentUser.asReadonly();
@@ -33,13 +36,18 @@ export class AuthService {
       this._isAuthenticated.set(!!user);
       this._isInitialized.set(true);
 
-      // Listen to auth changes
-      this.supabase.onAuthStateChange((user) => {
+      // Listen to auth changes and register cleanup
+      const { data: { subscription } } = this.supabase.onAuthStateChange((user) => {
         this._currentUser.set(user);
         this._isAuthenticated.set(!!user);
       });
+
+      // Register cleanup when service is destroyed
+      this.destroyRef.onDestroy(() => {
+        subscription.unsubscribe();
+      });
     } catch (error) {
-      console.error('Auth initialization failed:', error);
+      this.logger.error('Auth initialization failed:', error);
       this._isInitialized.set(true);
     }
   }
@@ -76,6 +84,18 @@ export class AuthService {
     this._currentUser.set(data.user);
     this._isAuthenticated.set(true);
 
+    return data;
+  }
+
+  async signInWithGoogle() {
+    const { data, error } = await this.supabase.client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+
+    if (error) throw error;
     return data;
   }
 

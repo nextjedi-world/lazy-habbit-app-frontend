@@ -55,6 +55,46 @@
       flex: 1;
     }
   }
+
+  // Duration input with hours : minutes format
+  .duration-row {
+    margin-bottom: 0.5rem;
+
+    .duration-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .duration-inputs {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .duration-field {
+        flex: 1;
+        max-width: 120px;
+      }
+
+      .duration-separator {
+        font-size: 24px;
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.6);
+        line-height: 1;
+        padding-bottom: 20px; // Align with input fields
+      }
+    }
+
+    .duration-error {
+      display: block;
+      font-size: 12px;
+      color: #f44336;
+      margin-top: 4px;
+      margin-left: 12px;
+    }
+  }
 }
 
 .weekly-total {
@@ -182,5 +222,11 @@
   .form-row {
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .duration-row .duration-inputs {
+    .duration-field {
+      max-width: 100px;
+    }
   }
 }

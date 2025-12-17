@@ -46,3 +46,35 @@ button[type="submit"] {
   margin-top: 0.5rem;
   min-height: 48px;
 }
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0;
+  color: #666;
+  font-size: 0.875rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ddd;
+  }
+
+  span {
+    padding: 0 0.75rem;
+  }
+}
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+
+  svg {
+    flex-shrink: 0;
+  }
+}

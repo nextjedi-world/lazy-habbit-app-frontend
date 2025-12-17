@@ -103,10 +103,92 @@
   }
 }
 
-// Responsive adjustments for larger screens
-@media (min-width: 768px) {
+// Desktop layout - Transform bottom nav to sidebar
+@media (min-width: 1024px) {
   .bottom-nav {
-    // Consider hiding on desktop or moving to sidebar
-    max-width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: auto;
+    width: 240px;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    border-top: none;
+    border-right: 1px solid #e5e7eb;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+
+    &__item {
+      flex: 0 0 auto;
+      flex-direction: row;
+      justify-content: flex-start;
+      padding: 16px 24px;
+      min-height: 48px;
+      border-radius: 0;
+      margin: 4px 12px;
+      border-radius: 8px;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+
+      // Active state for sidebar
+      &--active {
+        background: #eff6ff;
+
+        &::after {
+          display: none; // Hide top indicator on sidebar
+        }
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 32px;
+          background: #3b82f6;
+          border-radius: 0 4px 4px 0;
+        }
+      }
+    }
+
+    &__icon {
+      font-size: 24px;
+      margin-bottom: 0;
+      margin-right: 16px;
+    }
+
+    &__label {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+  }
+
+  // Dark theme for sidebar
+  @media (prefers-color-scheme: dark) {
+    .bottom-nav {
+      border-right-color: #374151;
+
+      &__item {
+        &:hover {
+          background: #374151;
+        }
+
+        &--active {
+          background: #1e3a5f;
+
+          &::before {
+            background: #60a5fa;
+          }
+        }
+      }
+    }
   }
 }

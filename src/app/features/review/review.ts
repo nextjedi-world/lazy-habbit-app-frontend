@@ -7,10 +7,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ScoreService } from '../../core/services/score';
 import { AuthService } from '../../core/services/auth';
 import { PlanService } from '../../core/services/plan';
 import { UserService } from '../../core/services/user';
+import { Logger } from '../../core/services/logger';
 import { WeeklyScore } from '../../core/models/score.model';
 import { PercentagePipe } from '../../shared/pipes/percentage-pipe';
 import { ScoreCardComponent } from './components/score-card/score-card';
@@ -27,6 +29,7 @@ import { TierStatusComponent } from './components/tier-status/tier-status';
     MatIconModule,
     MatDividerModule,
     MatBadgeModule,
+    MatSnackBarModule,
     PercentagePipe,
     ScoreCardComponent,
     TierStatusComponent,
@@ -40,7 +43,9 @@ export class ReviewComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly planService = inject(PlanService);
   private readonly userService = inject(UserService);
+  private readonly logger = inject(Logger);
   private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
 
   // State signals
   loading = signal(false);
@@ -67,70 +72,84 @@ export class ReviewComponent implements OnInit {
     return this.weeklyScore()?.category_scores ?? [];
   });
 
-  ngOnInit() {
-    this.loadWeekReview();
+  async ngOnInit() {
+    try {
+      this.loading.set(true);
+      await this.loadWeekReview();
+    } catch (error) {
+      this.logger.error('Failed to load review data:', error);
+
+      const snackBarRef = this.snackBar.open(
+        'Failed to load review data. Please try again.',
+        'Retry',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        }
+      );
+
+      snackBarRef.onAction().subscribe(() => {
+        this.ngOnInit(); // Retry on button click
+      });
+    } finally {
+      this.loading.set(false);
+    }
   }
 
   async loadWeekReview(): Promise<void> {
-    this.loading.set(true);
     this.error.set(null);
 
-    try {
-      const user = this.authService.currentUser();
-      if (!user) {
-        throw new Error('User not authenticated');
+    const user = this.authService.currentUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Load current week plan
+    const activePlan = this.planService.activePlan();
+    if (!activePlan) {
+      // Try to load active plan
+      await this.planService.loadActivePlan(user.id);
+      const plan = this.planService.activePlan();
+      if (!plan) {
+        throw new Error('No active plan found');
       }
+    }
 
-      // Load current week plan
-      const activePlan = this.planService.activePlan();
-      if (!activePlan) {
-        // Try to load active plan
-        await this.planService.loadActivePlan(user.id);
-        const plan = this.planService.activePlan();
-        if (!plan) {
-          throw new Error('No active plan found');
-        }
-      }
+    const plan = this.planService.activePlan()!;
 
-      const plan = this.planService.activePlan()!;
+    // Load tasks for the plan
+    await this.planService.loadPlannedTasks(plan.id);
+    const tasks = this.planService.plannedTasks();
 
-      // Load tasks for the plan
-      await this.planService.loadPlannedTasks(plan.id);
-      const tasks = this.planService.plannedTasks();
+    // Load categories
+    await this.userService.loadCategories(user.id);
+    const categories = this.userService.categories();
 
-      // Load categories
-      await this.userService.loadCategories(user.id);
-      const categories = this.userService.categories();
+    // Calculate score
+    const scoreData = this.scoreService.calculateScore(tasks, categories);
 
-      // Calculate score
-      const scoreData = this.scoreService.calculateScore(tasks, categories);
+    // Save score to database
+    await this.scoreService.saveWeeklyScore(
+      user.id,
+      plan.id,
+      plan.week_start_date,
+      scoreData
+    );
 
-      // Save score to database
-      await this.scoreService.saveWeeklyScore(
-        user.id,
-        plan.id,
-        plan.week_start_date,
-        scoreData
-      );
+    // Load recent scores for tier tracking
+    await this.scoreService.loadRecentScores(user.id, 3);
 
-      // Load recent scores for tier tracking
-      await this.scoreService.loadRecentScores(user.id, 3);
+    // Set current score
+    const score = this.scoreService.currentScore();
+    this.weeklyScore.set(score);
 
-      // Set current score
-      const score = this.scoreService.currentScore();
-      this.weeklyScore.set(score);
-
-      // Show confetti if on promotion track
-      const track = this.tierStatus();
-      if (track?.track === 'promotion') {
-        this.showConfetti.set(true);
-        setTimeout(() => this.showConfetti.set(false), 5000);
-      }
-    } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to load week review');
-      console.error('Failed to load week review:', err);
-    } finally {
-      this.loading.set(false);
+    // Show confetti if on promotion track
+    const track = this.tierStatus();
+    if (track?.track === 'promotion') {
+      this.showConfetti.set(true);
+      setTimeout(() => this.showConfetti.set(false), 5000);
     }
   }
 

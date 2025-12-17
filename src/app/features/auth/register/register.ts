@@ -96,6 +96,18 @@ export class RegisterComponent {
     }
   }
 
+  async signInWithGoogle(): Promise<void> {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+
+    try {
+      await this.authService.signInWithGoogle();
+    } catch (error) {
+      this.errorMessage.set(error instanceof Error ? error.message : 'Google sign-in failed');
+      this.loading.set(false);
+    }
+  }
+
   togglePasswordVisibility(): void {
     this.hidePassword.set(!this.hidePassword());
   }

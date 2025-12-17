@@ -9,9 +9,11 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserService } from '../../core/services/user';
 import { AuthService } from '../../core/services/auth';
 import { ScoreService } from '../../core/services/score';
+import { Logger } from '../../core/services/logger';
 import { UserProfile, TierHistory } from '../../core/models/user.model';
 import { WeeklyScore } from '../../core/models/score.model';
 import { TierGraphComponent } from './components/tier-graph/tier-graph';
@@ -36,6 +38,7 @@ interface UserStats {
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTableModule,
+    MatSnackBarModule,
     TierGraphComponent,
     PercentagePipe,
   ],
@@ -47,8 +50,10 @@ export class ProfileComponent implements OnInit {
   private userService = inject(UserService);
   private authService = inject(AuthService);
   private scoreService = inject(ScoreService);
+  private logger = inject(Logger);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   // Signals
   loading = signal(false);
@@ -64,51 +69,59 @@ export class ProfileComponent implements OnInit {
   displayedColumns = ['week', 'score'];
 
   async ngOnInit() {
-    await this.loadUserProfile();
-  }
-
-  async loadUserProfile() {
-    this.loading.set(true);
     try {
-      const currentUser = this.authService.currentUser();
-      if (!currentUser) {
-        this.router.navigate(['/auth/login']);
-        return;
-      }
-
-      // Load user profile
-      await this.userService.loadProfile(currentUser.id);
-      this.user.set(this.userService.profile());
-
-      // Load tier history
-      await this.userService.loadTierHistory(currentUser.id);
-      this.tierHistory.set(this.userService.tierHistory());
-
-      // Load recent scores (last 4 weeks)
-      await this.scoreService.loadRecentScores(currentUser.id, 4);
-      this.recentScores.set(this.scoreService.recentScores());
-
-      // Calculate stats
-      await this.calculateStats(currentUser.id);
+      this.loading.set(true);
+      await this.loadUserProfile();
     } catch (error) {
-      console.error('Failed to load profile:', error);
+      this.logger.error('Failed to load profile data:', error);
+
+      const snackBarRef = this.snackBar.open(
+        'Failed to load profile data. Please try again.',
+        'Retry',
+        {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        }
+      );
+
+      snackBarRef.onAction().subscribe(() => {
+        this.ngOnInit(); // Retry on button click
+      });
     } finally {
       this.loading.set(false);
     }
   }
 
+  async loadUserProfile() {
+    const currentUser = this.authService.currentUser();
+    if (!currentUser) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    // Load user profile
+    await this.userService.loadProfile(currentUser.id);
+    this.user.set(this.userService.profile());
+
+    // Load tier history
+    await this.userService.loadTierHistory(currentUser.id);
+    this.tierHistory.set(this.userService.tierHistory());
+
+    // Load recent scores (last 4 weeks)
+    await this.scoreService.loadRecentScores(currentUser.id, 4);
+    this.recentScores.set(this.scoreService.recentScores());
+
+    // Calculate stats
+    await this.calculateStats(currentUser.id);
+  }
+
   private async calculateStats(userId: string) {
     try {
       // Fetch all scores to calculate stats
-      const { data, error } = await this.userService['supabase'].client
-        .from('weekly_scores')
-        .select('*')
-        .eq('user_id', userId)
-        .order('week_start_date', { ascending: false });
+      const allScores = await this.scoreService.loadAllScores(userId);
 
-      if (error) throw error;
-
-      const allScores = data || [];
       const totalWeeks = allScores.length;
       const cleanWeeks = allScores.filter(s => s.is_clean).length;
 
@@ -128,7 +141,7 @@ export class ProfileComponent implements OnInit {
         currentStreak,
       });
     } catch (error) {
-      console.error('Failed to calculate stats:', error);
+      this.logger.error('Failed to calculate stats:', error);
       this.stats.set({
         totalWeeks: 0,
         cleanWeeks: 0,
@@ -172,7 +185,7 @@ export class ProfileComponent implements OnInit {
       this.scoreService.clearState();
       this.router.navigate(['/auth/login']);
     } catch (error) {
-      console.error('Logout failed:', error);
+      this.logger.error('Logout failed:', error);
     }
   }
 
