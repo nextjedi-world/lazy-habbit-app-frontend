@@ -38,7 +38,7 @@ export class PlanningComponent implements OnInit {
   // Services
   private readonly planService = inject(PlanService);
   private readonly authService = inject(AuthService);
-  private readonly dateUtils = inject(DateUtilsService);
+  readonly dateUtils = inject(DateUtilsService); // Public for template access
   private readonly logger = inject(Logger);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
@@ -84,22 +84,72 @@ export class PlanningComponent implements OnInit {
 
   hasTasks = computed(() => this.tasks().length > 0);
 
+  // Which week are we planning for?
+  targetWeekStart = computed(() => {
+    return this.planService.getTargetWeekStart();
+  });
+
+  // Human-readable week indicator
+  weekLabel = computed(() => {
+    const weekStart = this.targetWeekStart();
+    return this.dateUtils.formatWeekRange(weekStart);
+  });
+
+  // Check if we're in early planning mode (Fri-Sun)
+  isEarlyPlanningMode = computed(() => {
+    return this.dateUtils.isWeekend();
+  });
+
+  // Get edit eligibility from service
+  editEligibility = computed(() => {
+    const plan = this.planService.activePlan();
+    return this.planService.canEditPlan(plan);
+  });
+
   // Computed: Can user edit plan?
   canEdit = computed(() => {
-    return !this.hasActivePlan();
+    return this.editEligibility().canEdit;
   });
 
   // Computed: Message to display when editing is blocked
   restrictionMessage = computed(() => {
-    if (this.hasActivePlan()) {
-      return 'You already have an active plan for this week. Plans cannot be edited mid-week.';
+    return this.editEligibility().reason;
+  });
+
+  // Get edit window status message
+  editWindowStatus = computed(() => {
+    const eligibility = this.editEligibility();
+    const plan = this.planService.activePlan();
+
+    if (!plan) {
+      return ''; // No plan, no status message
     }
-    return '';
+
+    switch (eligibility.window) {
+      case 'early-week-planning':
+        return 'You can edit this plan until Sunday at 11:59 PM';
+
+      case 'monday-all-day':
+        const hoursLeft = this.dateUtils.getHoursUntilMondayMidnight();
+        return `You can edit until Monday at 11:59 PM (${hoursLeft}h remaining)`;
+
+      case 'locked':
+        return 'This plan is locked until next Monday';
+
+      default:
+        return '';
+    }
   });
 
   async ngOnInit() {
     try {
       this.loading.set(true);
+
+      // Load active plan for the target week
+      const user = this.authService.currentUser();
+      if (user) {
+        await this.planService.loadActivePlan(user.id);
+      }
 
       // Check for active plan
       await this.checkActivePlan();
@@ -107,8 +157,12 @@ export class PlanningComponent implements OnInit {
       // Check if user has a plan from last week
       await this.checkLastWeekPlan();
 
-      // Restore draft if available and no active plan
-      if (!this.hasActivePlan() && this.canEdit()) {
+      // Load existing plan tasks for editing if allowed
+      if (this.hasActivePlan() && this.canEdit()) {
+        await this.loadPlanForEditing();
+      }
+      // Otherwise restore draft if available and no active plan
+      else if (!this.hasActivePlan() && this.canEdit()) {
         this.restoreDraft();
       }
     } catch (error) {
@@ -141,15 +195,42 @@ export class PlanningComponent implements OnInit {
   }
 
   /**
-   * Check if user already has an active plan for this week
-   * CRITICAL BUSINESS RULE: Cannot create/edit if active plan exists
+   * Load existing plan tasks for editing
+   */
+  private async loadPlanForEditing(): Promise<void> {
+    try {
+      const plannedTasks = this.planService.plannedTasks();
+
+      if (plannedTasks && plannedTasks.length > 0) {
+        // Convert PlannedTaskWithCategory to TaskInput format
+        const taskInputs: TaskInput[] = plannedTasks.map(task => ({
+          id: task.id,
+          name: task.name,
+          category_id: task.category_id,
+          duration_minutes: task.duration_minutes,
+          target_frequency: task.target_frequency,
+          isValid: true
+        }));
+
+        this.tasks.set(taskInputs);
+        this.logger.log('Loaded plan for editing:', taskInputs.length, 'tasks');
+      }
+    } catch (error) {
+      this.logger.error('Failed to load plan for editing:', error);
+    }
+  }
+
+  /**
+   * Check if user already has an active plan for target week
+   * - Mon-Thu: Check current week
+   * - Fri-Sun: Check next week
    */
   private async checkActivePlan(): Promise<void> {
     const user = this.authService.currentUser();
     if (!user) return;
 
     try {
-      const weekStart = this.dateUtils.getWeekStartISO();
+      const weekStart = this.planService.getTargetWeekStart();
       const data = await this.planService.checkPlanExists(user.id, weekStart);
       this.hasActivePlan.set(!!data);
     } catch (err) {
@@ -158,17 +239,27 @@ export class PlanningComponent implements OnInit {
   }
 
   /**
-   * Check if user has a plan from last week
+   * Check if user has a plan to copy from (source plan)
+   * - Fri-Sun: Check current week plan
+   * - Mon-Thu: Check last week plan
    */
   private async checkLastWeekPlan(): Promise<void> {
     const user = this.authService.currentUser();
     if (!user) return;
 
     try {
-      // Get last week's plan
-      const lastWeekStart = this.dateUtils.getLastWeekStartISO();
-      const data = await this.planService.checkPlanExists(user.id, lastWeekStart);
+      const dayOfWeek = this.dateUtils.getDayOfWeek();
+      let sourceWeekStart: string;
 
+      if (dayOfWeek >= 5) {
+        // Fri-Sun: Check current week
+        sourceWeekStart = this.dateUtils.getWeekStartISO();
+      } else {
+        // Mon-Thu: Check last week
+        sourceWeekStart = this.dateUtils.getLastWeekStartISO();
+      }
+
+      const data = await this.planService.checkPlanExists(user.id, sourceWeekStart);
       this.hasLastWeekPlan.set(!!data);
     } catch (err) {
       this.hasLastWeekPlan.set(false);
@@ -255,7 +346,7 @@ export class PlanningComponent implements OnInit {
   }
 
   /**
-   * Save plan to Supabase
+   * Save plan to Supabase (create new or update existing)
    */
   async savePlan(): Promise<void> {
     if (!this.isFormValid()) {
@@ -272,10 +363,24 @@ export class PlanningComponent implements OnInit {
     }
 
     try {
-      // Create new plan
-      const plan = await this.planService.createPlan(user.id);
+      const activePlan = this.planService.activePlan();
 
-      // Add all tasks
+      let plan;
+      if (activePlan) {
+        // Editing existing plan - delete old tasks first
+        plan = activePlan;
+        const existingTasks = this.planService.plannedTasks();
+
+        // Delete all existing tasks
+        await Promise.all(
+          existingTasks.map(task => this.planService.removeTask(task.id))
+        );
+      } else {
+        // Create new plan
+        plan = await this.planService.createPlan(user.id);
+      }
+
+      // Add all tasks (new or updated)
       const taskPromises = this.tasks().map(task =>
         this.planService.addTask(plan.id, {
           category_id: task.category_id,
@@ -290,7 +395,8 @@ export class PlanningComponent implements OnInit {
       // Clear draft after successful save
       this.clearDraft();
 
-      this.snackBar.open('Weekly plan created successfully!', 'Close', { duration: 3000 });
+      const message = activePlan ? 'Plan updated successfully!' : 'Weekly plan created successfully!';
+      this.snackBar.open(message, 'Close', { duration: 3000 });
       await this.router.navigate(['/dashboard']);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save plan';
@@ -326,7 +432,7 @@ export class PlanningComponent implements OnInit {
       const draft = {
         tasks: this.tasks(),
         timestamp: new Date().toISOString(),
-        weekStart: this.dateUtils.getWeekStartISO()
+        weekStart: this.targetWeekStart() // Use target week (current or next)
       };
 
       localStorage.setItem(this.DRAFT_KEY, JSON.stringify(draft));
@@ -359,9 +465,9 @@ export class PlanningComponent implements OnInit {
 
       const draft = JSON.parse(draftJson);
 
-      // Check if draft is for current week
-      const currentWeekStart = this.dateUtils.getWeekStartISO();
-      if (draft.weekStart !== currentWeekStart) {
+      // Check if draft is for target week (not just current week)
+      const targetWeekStart = this.targetWeekStart();
+      if (draft.weekStart !== targetWeekStart) {
         this.logger.log('Draft is for a different week, clearing it');
         this.clearDraft();
         return;
@@ -372,19 +478,32 @@ export class PlanningComponent implements OnInit {
         this.tasks.set(draft.tasks);
         this.logger.log('Draft restored from localStorage');
 
-        this.snackBar.open(
-          'Draft restored from previous session',
-          'Clear',
-          {
-            duration: 5000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom'
-          }
-        ).onAction().subscribe(() => {
-          this.clearDraft();
-          this.tasks.set([]);
-          this.snackBar.open('Draft cleared', 'Close', { duration: 2000 });
-        });
+        // Show warning if plan is now locked
+        if (!this.canEdit()) {
+          this.snackBar.open(
+            'Draft restored, but plan is now locked. View only.',
+            'Dismiss',
+            {
+              duration: 0, // Persist until dismissed
+              horizontalPosition: 'center',
+              verticalPosition: 'top'
+            }
+          );
+        } else {
+          this.snackBar.open(
+            'Draft restored from previous session',
+            'Clear',
+            {
+              duration: 5000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            }
+          ).onAction().subscribe(() => {
+            this.clearDraft();
+            this.tasks.set([]);
+            this.snackBar.open('Draft cleared', 'Close', { duration: 2000 });
+          });
+        }
       }
     } catch (error) {
       this.logger.error('Failed to restore draft:', error);

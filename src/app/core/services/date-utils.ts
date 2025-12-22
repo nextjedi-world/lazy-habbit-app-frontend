@@ -238,4 +238,84 @@ export class DateUtilsService {
 
     return d.toLocaleDateString('en-IN', options);
   }
+
+  /**
+   * Check if today is Friday, Saturday, or Sunday (early planning window)
+   * @returns true if Fri/Sat/Sun
+   */
+  isWeekend(): boolean {
+    const dayOfWeek = this.getDayOfWeek();
+    return dayOfWeek >= 5; // Fri(5), Sat(6), Sun(7)
+  }
+
+  /**
+   * Check if today is Monday
+   * @returns true if Monday
+   */
+  isMonday(): boolean {
+    return this.getDayOfWeek() === 1;
+  }
+
+  /**
+   * Check if today is Tuesday through Sunday (mid-week locked period)
+   * @returns true if Tue-Sun
+   */
+  isMidWeek(): boolean {
+    const dayOfWeek = this.getDayOfWeek();
+    return dayOfWeek >= 2; // Tue(2) through Sun(7)
+  }
+
+  /**
+   * Get human-readable day name
+   * @param date - Date to get day name for (defaults to now)
+   * @returns Day name (e.g., "Monday", "Friday")
+   */
+  getDayName(date: Date = new Date()): string {
+    const istDate = this.toIST(date);
+    return istDate.toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'Asia/Kolkata' });
+  }
+
+  /**
+   * Format week range for display from ISO week start date
+   * @param weekStartISO - Monday date in YYYY-MM-DD format
+   * @returns e.g., "Dec 30 - Jan 5"
+   */
+  formatWeekRange(weekStartISO: string): string {
+    const monday = new Date(weekStartISO);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const startStr = monday.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+
+    const endStr = sunday.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+
+    return `${startStr} - ${endStr}`;
+  }
+
+  /**
+   * Calculate hours until Monday midnight IST
+   * Used for showing countdown in UI
+   * @returns Number of hours until Monday 11:59 PM IST (0 if not Monday)
+   */
+  getHoursUntilMondayMidnight(): number {
+    const now = this.toIST();
+    const currentDayOfWeek = this.getDayOfWeek();
+
+    if (currentDayOfWeek !== 1) {
+      return 0; // Not Monday, no countdown
+    }
+
+    // Calculate Monday midnight (end of Monday)
+    const mondayMidnight = new Date(now);
+    mondayMidnight.setHours(23, 59, 59, 999);
+
+    const diffMs = mondayMidnight.getTime() - now.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60)); // Convert to hours
+  }
 }

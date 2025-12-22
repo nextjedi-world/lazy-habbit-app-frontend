@@ -23,3 +23,9 @@ export interface PlannedTask {
 export interface PlannedTaskWithCategory extends PlannedTask {
   category: Category;
 }
+
+export interface PlanEditEligibility {
+  canEdit: boolean;
+  reason: string;
+  window: 'early-week-planning' | 'monday-all-day' | 'locked' | 'no-plan';
+}

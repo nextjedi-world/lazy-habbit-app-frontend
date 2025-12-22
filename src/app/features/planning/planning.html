@@ -1,22 +1,54 @@
 <div class="planning-container">
   <!-- Header -->
   <header class="planning-header">
-    <h1>Plan Your Week</h1>
+    <h1>{{ hasActivePlan() && canEdit() ? 'Edit Your Plan' : 'Plan Your Week' }}</h1>
     <div class="total-hours" [class.animated]="hasTasks()">
       <span class="hours-value">{{ totalHours().toFixed(1) }}</span>
       <span class="hours-label">hours/week</span>
     </div>
   </header>
 
+  <!-- Week Indicator -->
+  <div class="week-indicator" role="status" aria-live="polite">
+    @if (isEarlyPlanningMode()) {
+      <mat-icon class="indicator-icon">event_available</mat-icon>
+      <div class="indicator-content">
+        <span class="indicator-label">Planning for next week</span>
+        <span class="indicator-week">{{ weekLabel() }}</span>
+      </div>
+    } @else {
+      <mat-icon class="indicator-icon">calendar_today</mat-icon>
+      <div class="indicator-content">
+        <span class="indicator-label">Planning for current week</span>
+        <span class="indicator-week">{{ weekLabel() }}</span>
+      </div>
+    }
+  </div>
+
   <!-- Restriction Message (Mid-week edit blocked) -->
   @if (!canEdit()) {
     <mat-card class="restriction-card" role="alert" aria-live="polite">
       <mat-icon class="restriction-icon">lock</mat-icon>
       <div class="restriction-content">
-        <h3>Planning Restricted</h3>
+        <h3>{{ editEligibility().window === 'locked' ? 'Planning Locked' : 'Planning Restricted' }}</h3>
         <p>{{ restrictionMessage() }}</p>
+
+        <!-- Show helpful context based on day -->
+        @if (dateUtils.getDayOfWeek() >= 5 && !hasActivePlan()) {
+          <p class="restriction-hint">
+            Current week planning is closed. Create your plan for next week instead.
+          </p>
+        }
       </div>
     </mat-card>
+  }
+
+  <!-- Edit Window Status (shown when plan exists and is editable) -->
+  @if (hasActivePlan() && canEdit()) {
+    <div class="edit-window-status" role="status" aria-live="polite">
+      <mat-icon class="status-icon">schedule</mat-icon>
+      <span>{{ editWindowStatus() }}</span>
+    </div>
   }
 
   <!-- Loading Spinner -->
@@ -27,8 +59,8 @@
     </div>
   }
 
-  <!-- Primary Action Buttons (if last week plan exists) -->
-  @if (hasLastWeekPlan() && !hasTasks() && canEdit()) {
+  <!-- Primary Action Buttons (if last week plan exists and not editing) -->
+  @if (hasLastWeekPlan() && !hasTasks() && canEdit() && !hasActivePlan()) {
     <section class="action-section" aria-label="Quick actions">
       <button
         mat-raised-button
@@ -37,7 +69,11 @@
         (click)="repeatLastWeek()"
         [disabled]="loading()">
         <mat-icon>refresh</mat-icon>
-        Repeat Last Week
+        @if (isEarlyPlanningMode()) {
+          Repeat Current Week
+        } @else {
+          Repeat Last Week
+        }
       </button>
 
       <button
@@ -51,8 +87,8 @@
     </section>
   }
 
-  <!-- Empty State (no tasks) -->
-  @if (!hasTasks() && !hasLastWeekPlan() && canEdit()) {
+  <!-- Empty State (no tasks and not editing) -->
+  @if (!hasTasks() && !hasLastWeekPlan() && canEdit() && !hasActivePlan()) {
     <div class="empty-state">
       <mat-icon class="empty-icon">event_note</mat-icon>
       <h2>Create Your First Weekly Plan</h2>

@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase';
 import { DateUtilsService } from './date-utils';
 import { Logger } from './logger';
-import { WeeklyPlan, PlannedTask, PlannedTaskWithCategory } from '../models/plan.model';
+import { WeeklyPlan, PlannedTask, PlannedTaskWithCategory, PlanEditEligibility } from '../models/plan.model';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +33,9 @@ export class PlanService {
   }
 
   /**
-   * Load active plan for current week
+   * Load active plan for target week (current or next based on day)
+   * - Mon-Thu: Load current week plan
+   * - Fri-Sun: Load next week plan
    */
   async loadActivePlan(userId: string): Promise<void> {
     // Input validation
@@ -48,7 +50,7 @@ export class PlanService {
       // Ensure profile exists
       await this.ensureProfileExists(userId);
 
-      const weekStart = this.getWeekStart();
+      const weekStart = this.getTargetWeekStart();
 
       const { data, error } = await this.supabase.client
         .from('weekly_plans')
@@ -149,39 +151,13 @@ export class PlanService {
   }
 
   /**
-   * Create new weekly plan
+   * Create new weekly plan for target week (current or next based on day)
+   * - Mon-Thu: Create for current week
+   * - Fri-Sun: Create for next week
    */
   async createPlan(userId: string): Promise<WeeklyPlan> {
-    // Input validation
-    if (!userId || typeof userId !== 'string') {
-      throw new Error('Invalid user ID: must be a non-empty string');
-    }
-
-    this.errorSignal.set(null);
-
-    try {
-      // Ensure profile exists before creating plan
-      await this.ensureProfileExists(userId);
-
-      const weekStart = this.getWeekStart();
-
-      const { data, error } = await this.supabase.client
-        .from('weekly_plans')
-        .insert({
-          user_id: userId,
-          week_start_date: weekStart,
-          status: 'active',
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      this.activePlanSignal.set(data);
-      return data;
-    } catch (err) {
-      this.errorSignal.set(err instanceof Error ? err.message : 'Failed to create plan');
-      throw err;
-    }
+    const weekStart = this.getTargetWeekStart();
+    return this.createPlanForWeek(userId, weekStart);
   }
 
   /**
@@ -229,6 +205,8 @@ export class PlanService {
 
   /**
    * Repeat last week's plan (primary UX flow)
+   * - Fri-Sun: Copy current week → next week
+   * - Mon-Thu: Copy last week → current week
    */
   async repeatLastWeek(userId: string): Promise<void> {
     // Input validation
@@ -240,32 +218,47 @@ export class PlanService {
     this.errorSignal.set(null);
 
     try {
-      // Get last week's plan
-      const lastWeekStart = this.dateUtils.getLastWeekStartISO();
+      // Determine source week based on current day
+      const dayOfWeek = this.dateUtils.getDayOfWeek();
+      let sourceWeekStart: string;
+      let weekLabel: string;
 
-      const { data: lastPlan, error: planError } = await this.supabase.client
+      if (dayOfWeek >= 5) {
+        // Fri/Sat/Sun: Copy current week → next week
+        sourceWeekStart = this.dateUtils.getWeekStartISO();
+        weekLabel = 'current week';
+      } else {
+        // Mon-Thu: Copy last week → current week (original behavior)
+        sourceWeekStart = this.dateUtils.getLastWeekStartISO();
+        weekLabel = 'last week';
+      }
+
+      const { data: sourcePlan, error: planError } = await this.supabase.client
         .from('weekly_plans')
         .select('*')
         .eq('user_id', userId)
-        .eq('week_start_date', lastWeekStart)
+        .eq('week_start_date', sourceWeekStart)
         .single();
 
-      if (planError) throw new Error('No plan found from last week');
+      if (planError) {
+        throw new Error(`No plan found from ${weekLabel}`);
+      }
 
-      // Get last week's tasks
-      const { data: lastTasks, error: tasksError } = await this.supabase.client
+      // Get source week's tasks
+      const { data: sourceTasks, error: tasksError } = await this.supabase.client
         .from('planned_tasks')
         .select('*')
-        .eq('plan_id', lastPlan.id);
+        .eq('plan_id', sourcePlan.id);
 
       if (tasksError) throw tasksError;
 
-      // Create new plan
-      const newPlan = await this.createPlan(userId);
+      // Create plan for target week
+      const targetWeekStart = this.getTargetWeekStart();
+      const newPlan = await this.createPlanForWeek(userId, targetWeekStart);
 
       // Copy tasks to new plan
-      if (lastTasks && lastTasks.length > 0) {
-        const newTasks = lastTasks.map(task => ({
+      if (sourceTasks && sourceTasks.length > 0) {
+        const newTasks = sourceTasks.map(task => ({
           plan_id: newPlan.id,
           template_id: task.template_id,
           category_id: task.category_id,
@@ -320,6 +313,61 @@ export class PlanService {
   }
 
   /**
+   * Get the target week start based on current day
+   * - Mon-Thu: Current week
+   * - Fri-Sun: Next week
+   * @returns ISO date string for target week's Monday
+   */
+  getTargetWeekStart(): string {
+    const dayOfWeek = this.dateUtils.getDayOfWeek();
+
+    if (dayOfWeek >= 5) { // Fri(5), Sat(6), Sun(7)
+      return this.dateUtils.getNextWeekStartISO();
+    }
+
+    return this.dateUtils.getWeekStartISO();
+  }
+
+  /**
+   * Create new weekly plan for a specific week
+   * @param userId - User ID
+   * @param weekStartDate - Monday of target week (ISO string YYYY-MM-DD)
+   * @returns Created plan
+   */
+  async createPlanForWeek(userId: string, weekStartDate: string): Promise<WeeklyPlan> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!weekStartDate || typeof weekStartDate !== 'string') {
+      throw new Error('Invalid week start date: must be a non-empty string');
+    }
+
+    this.errorSignal.set(null);
+
+    try {
+      await this.ensureProfileExists(userId);
+
+      const { data, error } = await this.supabase.client
+        .from('weekly_plans')
+        .insert({
+          user_id: userId,
+          week_start_date: weekStartDate,
+          status: 'active',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      this.activePlanSignal.set(data);
+      return data;
+    } catch (err) {
+      this.errorSignal.set(err instanceof Error ? err.message : 'Failed to create plan');
+      throw err;
+    }
+  }
+
+  /**
    * Complete current plan (called on Sunday)
    */
   async completePlan(planId: number): Promise<void> {
@@ -346,6 +394,77 @@ export class PlanService {
       this.errorSignal.set(err instanceof Error ? err.message : 'Failed to complete plan');
       throw err;
     }
+  }
+
+  /**
+   * Determine if a plan can be edited based on current day and plan week
+   * @param plan - Weekly plan to check (null if no plan exists)
+   * @returns Edit eligibility with reason and window type
+   */
+  canEditPlan(plan: WeeklyPlan | null): PlanEditEligibility {
+    // No plan exists - always allow editing
+    if (!plan) {
+      return {
+        canEdit: true,
+        reason: 'No plan exists for this week',
+        window: 'no-plan'
+      };
+    }
+
+    const currentWeekStartISO = this.dateUtils.getWeekStartISO();
+    const planWeekStartISO = plan.week_start_date; // Already in YYYY-MM-DD format
+    const currentDayOfWeek = this.dateUtils.getDayOfWeek(); // 1=Mon, 7=Sun
+
+    // Is this plan for current week or future week?
+    const isPlanForCurrentWeek = planWeekStartISO === currentWeekStartISO;
+    const isPlanForFutureWeek = planWeekStartISO > currentWeekStartISO;
+
+    // Case 1: Plan is for a FUTURE week (created on Fri/Sat/Sun)
+    if (isPlanForFutureWeek) {
+      // We're still in the week BEFORE the plan's week
+      // Allow editing Fri/Sat/Sun until midnight Sunday
+      if (currentDayOfWeek >= 5) { // Fri(5), Sat(6), Sun(7)
+        return {
+          canEdit: true,
+          reason: 'Early week planning window (Friday-Sunday)',
+          window: 'early-week-planning'
+        };
+      } else {
+        // It's Mon-Thu of the week before the plan
+        // This shouldn't happen in normal flow, but handle it
+        return {
+          canEdit: false,
+          reason: 'Cannot edit future week plan until Friday',
+          window: 'locked'
+        };
+      }
+    }
+
+    // Case 2: Plan is for CURRENT week
+    if (isPlanForCurrentWeek) {
+      // Check if it's Monday
+      if (currentDayOfWeek === 1) { // Monday
+        return {
+          canEdit: true,
+          reason: 'Monday all-day edit window',
+          window: 'monday-all-day'
+        };
+      }
+
+      // Tue-Sun: Locked
+      return {
+        canEdit: false,
+        reason: 'Plans cannot be edited mid-week (Tuesday-Sunday)',
+        window: 'locked'
+      };
+    }
+
+    // Case 3: Plan is for PAST week (shouldn't happen, but handle gracefully)
+    return {
+      canEdit: false,
+      reason: 'Cannot edit past week plans',
+      window: 'locked'
+    };
   }
 
   /**
