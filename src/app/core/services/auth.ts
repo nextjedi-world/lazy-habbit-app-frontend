@@ -106,6 +106,6 @@ export class AuthService {
     this._currentUser.set(null);
     this._isAuthenticated.set(false);
 
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/']);
   }
 }

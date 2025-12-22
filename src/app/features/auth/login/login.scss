@@ -1,3 +1,14 @@
+// Override app layout padding for full-width login page
+:host {
+  display: block;
+  margin: -80px 0 0 0; // Remove bottom nav padding
+
+  @media (min-width: 1024px) {
+    margin: 0 0 0 -240px; // Remove left side nav padding
+    width: calc(100% + 240px); // Expand to full width
+  }
+}
+
 .login-container {
   display: flex;
   justify-content: center;

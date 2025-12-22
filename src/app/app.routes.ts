@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
+import { publicGuard } from './core/guards/public-guard';
 
 export const routes: Routes = [
   // Legal pages (public, no auth required) - MUST be first!
@@ -12,20 +13,23 @@ export const routes: Routes = [
     loadComponent: () => import('./features/legal/terms-of-service/terms-of-service').then(m => m.TermsOfServiceComponent),
   },
 
+  // Landing page (public, redirect authenticated users to dashboard)
   {
     path: '',
-    redirectTo: '/dashboard',
-    pathMatch: 'full',
+    loadComponent: () => import('./features/landing/landing').then(m => m.LandingComponent),
+    canActivate: [publicGuard],
   },
 
   // Auth routes under /auth prefix
   {
     path: 'auth/login',
     loadComponent: () => import('./features/auth/login/login').then(m => m.LoginComponent),
+    canActivate: [publicGuard],
   },
   {
     path: 'auth/register',
     loadComponent: () => import('./features/auth/register/register').then(m => m.RegisterComponent),
+    canActivate: [publicGuard],
   },
 
   // Protected routes
@@ -65,6 +69,6 @@ export const routes: Routes = [
   // 404 fallback
   {
     path: '**',
-    redirectTo: '/dashboard',
+    redirectTo: '',
   },
 ];

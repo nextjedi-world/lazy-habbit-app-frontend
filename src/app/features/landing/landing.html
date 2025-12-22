@@ -1,0 +1,85 @@
+<div class="landing-container">
+  <section class="hero-section" aria-labelledby="hero-heading">
+    <div class="hero-content">
+      <div class="hero-text">
+        <!-- Headline -->
+        <h1 id="hero-heading" class="hero-title">
+          Weekly Quotas.<br>
+          Not Daily Schedules.
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="hero-subtitle">
+          Build lasting habits with flexible goals that respect your life.
+          Set your week Monday, live with it, and let the 3-week buffer
+          absorb the chaos.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="cta-buttons">
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            class="cta-primary"
+            (click)="navigateToRegister()"
+            aria-label="Get started with Lazy Habbit App">
+            Get Started Free
+          </button>
+          <button
+            mat-stroked-button
+            type="button"
+            class="cta-secondary"
+            (click)="navigateToLogin()"
+            aria-label="Sign in to your account">
+            Sign In
+          </button>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-preview">
+          @for (stat of stats; track stat.value) {
+            <div class="stat-item">
+              <mat-icon class="stat-icon" aria-hidden="true">{{ stat.icon }}</mat-icon>
+              <div class="stat-content">
+                <span class="stat-value">{{ stat.value }}</span>
+                <span class="stat-label">{{ stat.label }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- CSS Mockup -->
+      <div class="hero-visual">
+        <div class="screenshot-placeholder">
+          <div class="mockup-device">
+            <div class="mockup-screen">
+              <div class="mockup-header">
+                <div class="mockup-title">This Week</div>
+                <div class="mockup-score">78%</div>
+              </div>
+              <div class="mockup-tasks">
+                <div class="mockup-task completed">
+                  <span class="task-dot"></span>
+                  <span class="task-name">Gym</span>
+                  <span class="task-count">2/3</span>
+                </div>
+                <div class="mockup-task">
+                  <span class="task-dot"></span>
+                  <span class="task-name">Reading</span>
+                  <span class="task-count">1/4</span>
+                </div>
+                <div class="mockup-task">
+                  <span class="task-dot"></span>
+                  <span class="task-name">Writing</span>
+                  <span class="task-count">0/2</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
