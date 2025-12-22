@@ -13,6 +13,18 @@ export interface Category {
   name: string;
   display_order: number;
   created_at: string;
+  preset_id?: string;  // Reference to CategoryPreset (e.g., 'health-red')
+  color?: string;      // Override color (derived from preset if not set)
+  icon?: string;       // Override icon (derived from preset if not set)
+}
+
+/**
+ * Category with computed color and icon from preset
+ * Used for display purposes throughout the app
+ */
+export interface CategoryWithPreset extends Category {
+  color: string;
+  icon: string;
 }
 
 export interface TaskTemplate {

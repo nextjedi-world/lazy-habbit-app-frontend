@@ -1,7 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { SupabaseService } from './supabase';
 import { Logger } from './logger';
-import { UserProfile, Category, TierHistory } from '../models/user.model';
+import { UserProfile, Category, CategoryWithPreset, TierHistory } from '../models/user.model';
+import { DEFAULT_CATEGORY_IDS, getPresetById } from '../../shared/constants/category-presets';
 
 @Injectable({
   providedIn: 'root',
@@ -140,14 +141,14 @@ export class UserService {
    * Create default categories for new user
    */
   async createDefaultCategories(userId: string): Promise<void> {
-    const defaultCategories = [
-      { name: 'Health', display_order: 1 },
-      { name: 'Learning', display_order: 2 },
-      { name: 'Creative', display_order: 3 },
-      { name: 'Leisure', display_order: 4 },
-      { name: 'Project', display_order: 5 },
-      { name: 'Career', display_order: 6 },
-    ];
+    const defaultCategories = DEFAULT_CATEGORY_IDS.map((presetId, index) => {
+      const preset = getPresetById(presetId);
+      return {
+        name: preset?.name || 'Category',
+        display_order: index + 1,
+        preset_id: presetId,
+      };
+    });
 
     try {
       const { data, error } = await this.supabase.client
@@ -157,6 +158,7 @@ export class UserService {
             user_id: userId,
             name: cat.name,
             display_order: cat.display_order,
+            preset_id: cat.preset_id,
           }))
         )
         .select();
@@ -167,6 +169,292 @@ export class UserService {
       this.errorSignal.set(err instanceof Error ? err.message : 'Failed to create categories');
       throw err;
     }
+  }
+
+  /**
+   * Create a new category
+   * @param userId - The user ID
+   * @param name - Category name (2-50 characters)
+   * @param presetId - Preset ID from category-presets.ts
+   * @returns The created category
+   */
+  async createCategory(
+    userId: string,
+    name: string,
+    presetId: string
+  ): Promise<Category> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID: must be a non-empty string');
+    }
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      throw new Error('Category name is required');
+    }
+    if (name.length < 2 || name.length > 50) {
+      throw new Error('Category name must be between 2 and 50 characters');
+    }
+    if (!presetId || typeof presetId !== 'string') {
+      throw new Error('Preset ID is required');
+    }
+
+    try {
+      // Get current categories to determine display_order
+      const currentCategories = this.categoriesSignal();
+      const maxOrder =
+        currentCategories.length > 0
+          ? Math.max(...currentCategories.map(c => c.display_order))
+          : 0;
+
+      const { data, error } = await this.supabase.client
+        .from('categories')
+        .insert({
+          user_id: userId,
+          name: name.trim(),
+          preset_id: presetId,
+          display_order: maxOrder + 1,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('No data returned from insert');
+
+      // Update local state
+      this.categoriesSignal.update(cats => [...cats, data]);
+
+      this.logger.log('Category created:', data.name);
+      return data;
+    } catch (err) {
+      this.errorSignal.set(
+        err instanceof Error ? err.message : 'Failed to create category'
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Update category (rename or change preset)
+   * @param categoryId - The category ID
+   * @param updates - Fields to update (name, preset_id)
+   * @returns The updated category
+   */
+  async updateCategory(
+    categoryId: number,
+    updates: { name?: string; preset_id?: string }
+  ): Promise<Category> {
+    // Input validation
+    if (typeof categoryId !== 'number' || categoryId <= 0) {
+      throw new Error('Invalid category ID');
+    }
+    if (!updates || typeof updates !== 'object') {
+      throw new Error('Updates object is required');
+    }
+    if (updates.name !== undefined) {
+      if (
+        typeof updates.name !== 'string' ||
+        updates.name.trim().length === 0
+      ) {
+        throw new Error('Category name must be a non-empty string');
+      }
+      if (updates.name.length < 2 || updates.name.length > 50) {
+        throw new Error('Category name must be between 2 and 50 characters');
+      }
+    }
+
+    try {
+      const { data, error } = await this.supabase.client
+        .from('categories')
+        .update(updates)
+        .eq('id', categoryId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('No data returned from update');
+
+      // Update local state
+      this.categoriesSignal.update(cats =>
+        cats.map(c => (c.id === categoryId ? data : c))
+      );
+
+      this.logger.log('Category updated:', data.name);
+      return data;
+    } catch (err) {
+      this.errorSignal.set(
+        err instanceof Error ? err.message : 'Failed to update category'
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Delete category and reassign tasks to Uncategorized
+   * @param userId - The user ID
+   * @param categoryId - The category ID to delete
+   */
+  async deleteCategory(userId: string, categoryId: number): Promise<void> {
+    // Input validation
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('Invalid user ID');
+    }
+    if (typeof categoryId !== 'number' || categoryId <= 0) {
+      throw new Error('Invalid category ID');
+    }
+
+    try {
+      // Step 1: Ensure Uncategorized category exists
+      const uncategorized = await this.ensureUncategorizedCategory(userId);
+
+      // Step 2: Reassign all task_templates to Uncategorized
+      const { error: templatesError } = await this.supabase.client
+        .from('task_templates')
+        .update({ category_id: uncategorized.id })
+        .eq('category_id', categoryId);
+
+      if (templatesError) throw templatesError;
+
+      // Step 3: Reassign all planned_tasks to Uncategorized
+      const { error: plannedError } = await this.supabase.client
+        .from('planned_tasks')
+        .update({ category_id: uncategorized.id })
+        .eq('category_id', categoryId);
+
+      if (plannedError) throw plannedError;
+
+      // Step 4: Delete the category
+      const { error: deleteError } = await this.supabase.client
+        .from('categories')
+        .delete()
+        .eq('id', categoryId);
+
+      if (deleteError) throw deleteError;
+
+      // Step 5: Update local state
+      this.categoriesSignal.update(cats =>
+        cats.filter(c => c.id !== categoryId)
+      );
+
+      this.logger.log('Category deleted:', categoryId);
+    } catch (err) {
+      this.errorSignal.set(
+        err instanceof Error ? err.message : 'Failed to delete category'
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Ensure Uncategorized category exists
+   * Creates it if needed, returns existing if present
+   * @private
+   */
+  private async ensureUncategorizedCategory(
+    userId: string
+  ): Promise<Category> {
+    try {
+      // Check if Uncategorized already exists
+      const { data: existing, error: findError } = await this.supabase.client
+        .from('categories')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('name', 'Uncategorized')
+        .maybeSingle();
+
+      if (findError) throw findError;
+      if (existing) return existing;
+
+      // Create Uncategorized category
+      const { data: created, error: createError } = await this.supabase.client
+        .from('categories')
+        .insert({
+          user_id: userId,
+          name: 'Uncategorized',
+          preset_id: 'uncategorized-gray',
+          display_order: 9999, // Always at the end
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+      if (!created)
+        throw new Error('Failed to create Uncategorized category');
+
+      // Update local state
+      this.categoriesSignal.update(cats => [...cats, created]);
+
+      return created;
+    } catch (err) {
+      this.logger.error('Failed to ensure Uncategorized category:', err);
+      throw err;
+    }
+  }
+
+  /**
+   * Reorder categories (drag-and-drop support)
+   * @param orderedCategoryIds - Array of category IDs in new order
+   */
+  async reorderCategories(orderedCategoryIds: number[]): Promise<void> {
+    // Input validation
+    if (!Array.isArray(orderedCategoryIds)) {
+      throw new Error('orderedCategoryIds must be an array');
+    }
+    if (orderedCategoryIds.length === 0) {
+      throw new Error('Cannot reorder empty category list');
+    }
+
+    try {
+      // Update display_order for each category
+      const updates = orderedCategoryIds.map((id, index) => ({
+        id,
+        display_order: index + 1,
+      }));
+
+      // Batch update
+      const promises = updates.map(({ id, display_order }) =>
+        this.supabase.client
+          .from('categories')
+          .update({ display_order })
+          .eq('id', id)
+      );
+
+      const results = await Promise.all(promises);
+
+      // Check for errors
+      const errors = results.filter(r => r.error);
+      if (errors.length > 0) {
+        throw new Error(`Failed to reorder ${errors.length} categories`);
+      }
+
+      // Reload categories to refresh order
+      const userId = this.profileSignal()?.id;
+      if (userId) {
+        await this.loadCategories(userId);
+      }
+
+      this.logger.log('Categories reordered successfully');
+    } catch (err) {
+      this.errorSignal.set(
+        err instanceof Error ? err.message : 'Failed to reorder categories'
+      );
+      throw err;
+    }
+  }
+
+  /**
+   * Get category with computed color/icon from preset
+   * @param category - The category to enhance with preset data
+   * @returns Category with resolved color and icon
+   */
+  getCategoryWithPreset(category: Category): CategoryWithPreset {
+    const preset = category.preset_id
+      ? getPresetById(category.preset_id)
+      : undefined;
+
+    return {
+      ...category,
+      color: category.color || preset?.color || '#6b7280',
+      icon: category.icon || preset?.icon || 'category',
+    };
   }
 
   /**

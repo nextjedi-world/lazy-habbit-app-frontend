@@ -58,6 +58,7 @@
             formControlName="duration_hours"
             min="0"
             max="8"
+            (focus)="onDurationFocus($event)"
             [attr.aria-label]="'Duration hours for task ' + (taskIndex() + 1)" />
           @if (taskForm.controls.duration_hours.invalid && taskForm.controls.duration_hours.touched) {
             <mat-error>{{ hoursError }}</mat-error>
@@ -75,6 +76,7 @@
             min="0"
             max="59"
             step="5"
+            (focus)="onDurationFocus($event)"
             [attr.aria-label]="'Duration minutes for task ' + (taskIndex() + 1)" />
           @if (taskForm.controls.duration_mins.invalid && taskForm.controls.duration_mins.touched) {
             <mat-error>{{ minsError }}</mat-error>

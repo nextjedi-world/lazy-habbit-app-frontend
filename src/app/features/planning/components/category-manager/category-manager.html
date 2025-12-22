@@ -1,0 +1,137 @@
+<div class="category-manager">
+  <div class="manager-header">
+    <h3>Manage Categories</h3>
+    @if (!isCreating()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="startCreate()"
+        [attr.aria-label]="'Add new category'">
+        <mat-icon>add</mat-icon>
+        Add Category
+      </button>
+    }
+  </div>
+
+  <!-- Category Creation Form -->
+  @if (isCreating()) {
+    <div class="category-form" [formGroup]="categoryForm">
+      <h4>Create New Category</h4>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Category Name</mat-label>
+        <input
+          matInput
+          formControlName="name"
+          placeholder="e.g., Health"
+          required />
+        @if (categoryForm.controls.name.invalid && categoryForm.controls.name.touched) {
+          <mat-error>{{ nameError }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Color & Icon</mat-label>
+        <mat-select formControlName="preset_id" required>
+          @for (preset of availablePresets(); track preset.id) {
+            <mat-option [value]="preset.id">
+              <div class="preset-option">
+                <mat-icon [style.color]="preset.color">{{ preset.icon }}</mat-icon>
+                <span class="preset-name">{{ preset.name }}</span>
+                <span class="preset-color" [style.background-color]="preset.color"></span>
+              </div>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button mat-button (click)="cancel()">Cancel</button>
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="!categoryForm.valid"
+          (click)="saveNew()">
+          Create Category
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Existing Categories List -->
+  <div class="categories-list">
+    @for (category of categories(); track category.id) {
+      <div class="category-item">
+        @if (isEditing() === category.id) {
+          <!-- Edit Mode -->
+          <div class="category-form" [formGroup]="categoryForm">
+            <mat-form-field appearance="outline">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="name" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Preset</mat-label>
+              <mat-select formControlName="preset_id" required>
+                @for (preset of availablePresets(); track preset.id) {
+                  <mat-option [value]="preset.id">
+                    <div class="preset-option">
+                      <mat-icon [style.color]="preset.color">{{ preset.icon }}</mat-icon>
+                      <span class="preset-name">{{ preset.name }}</span>
+                    </div>
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-button (click)="cancel()">Cancel</button>
+              <button
+                mat-raised-button
+                color="primary"
+                [disabled]="!categoryForm.valid"
+                (click)="saveEdit(category.id)">
+                Save
+              </button>
+            </div>
+          </div>
+        } @else {
+          <!-- View Mode -->
+          <div class="category-view">
+            <div class="category-info">
+              @if (getPreset(category); as preset) {
+                <mat-icon [style.color]="preset.color">{{ preset.icon }}</mat-icon>
+                <span class="category-name">{{ category.name }}</span>
+                <span class="category-color" [style.background-color]="preset.color"></span>
+              } @else {
+                <mat-icon>category</mat-icon>
+                <span class="category-name">{{ category.name }}</span>
+              }
+            </div>
+
+            <div class="category-actions">
+              <button
+                mat-icon-button
+                (click)="startEdit(category)"
+                [attr.aria-label]="'Edit ' + category.name">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="deleteCategory(category)"
+                [attr.aria-label]="'Delete ' + category.name">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="manager-hint">
+    <mat-icon>info</mat-icon>
+    <span>Deleting a category will move all its tasks to "Uncategorized"</span>
+  </div>
+</div>

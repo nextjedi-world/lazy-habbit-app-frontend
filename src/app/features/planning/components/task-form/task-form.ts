@@ -136,6 +136,18 @@ export class TaskFormComponent {
     this.removeTask.emit();
   }
 
+  /**
+   * Select all text when duration field is focused
+   * Improves UX by allowing immediate typing to replace default values
+   */
+  onDurationFocus(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement;
+    if (input && input.select) {
+      // Use setTimeout to ensure selection happens after Angular's change detection
+      setTimeout(() => input.select(), 0);
+    }
+  }
+
   // Error getters
   get nameError(): string | null {
     const control = this.taskForm.controls.name;

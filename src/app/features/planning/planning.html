@@ -25,6 +25,26 @@
     }
   </div>
 
+  <!-- Category Management (inline on planning page) -->
+  <div class="category-management-section">
+    <button
+      mat-button
+      class="category-toggle"
+      (click)="toggleCategoryManager()"
+      [attr.aria-expanded]="showCategoryManager()"
+      [attr.aria-label]="showCategoryManager() ? 'Hide category manager' : 'Show category manager'">
+      <mat-icon>{{ showCategoryManager() ? 'expand_less' : 'tune' }}</mat-icon>
+      {{ showCategoryManager() ? 'Hide' : 'Manage' }} Categories
+    </button>
+
+    @if (showCategoryManager()) {
+      <app-category-manager
+        [categories]="categories()"
+        [userId]="authService.currentUser()!.id"
+        (categoriesChanged)="onCategoriesChanged()" />
+    }
+  </div>
+
   <!-- Restriction Message (Mid-week edit blocked) -->
   @if (!canEdit()) {
     <mat-card class="restriction-card" role="alert" aria-live="polite">

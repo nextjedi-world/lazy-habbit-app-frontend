@@ -7,8 +7,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { TaskFormComponent, TaskFormData } from './components/task-form/task-form';
+import { CategoryManager } from './components/category-manager/category-manager';
 import { PlanService } from '../../core/services/plan';
 import { AuthService } from '../../core/services/auth';
+import { UserService } from '../../core/services/user';
 import { DateUtilsService } from '../../core/services/date-utils';
 import { Logger } from '../../core/services/logger';
 import { Category } from '../../core/models/user.model';
@@ -29,6 +31,7 @@ interface TaskInput extends TaskFormData {
     MatProgressSpinnerModule,
     MatSnackBarModule,
     TaskFormComponent,
+    CategoryManager,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './planning.html',
@@ -38,6 +41,7 @@ export class PlanningComponent implements OnInit {
   // Services
   private readonly planService = inject(PlanService);
   private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
   readonly dateUtils = inject(DateUtilsService); // Public for template access
   private readonly logger = inject(Logger);
   private readonly router = inject(Router);
@@ -49,6 +53,7 @@ export class PlanningComponent implements OnInit {
   hasActivePlan = signal(false);
   tasks = signal<TaskInput[]>([]);
   showFAB = signal(true);
+  showCategoryManager = signal(false);
 
   // Auto-save draft state
   draftSaved = signal(false);
@@ -57,15 +62,8 @@ export class PlanningComponent implements OnInit {
   private readonly DRAFT_KEY = 'planning_draft';
   private readonly AUTO_SAVE_DELAY = 1000; // 1 second debounce
 
-  // Default categories (6 categories as per spec)
-  categories = signal<Category[]>([
-    { id: 1, user_id: '', name: 'Health', display_order: 1, created_at: '' },
-    { id: 2, user_id: '', name: 'Learning', display_order: 2, created_at: '' },
-    { id: 3, user_id: '', name: 'Creative', display_order: 3, created_at: '' },
-    { id: 4, user_id: '', name: 'Leisure', display_order: 4, created_at: '' },
-    { id: 5, user_id: '', name: 'Project', display_order: 5, created_at: '' },
-    { id: 6, user_id: '', name: 'Career', display_order: 6, created_at: '' },
-  ]);
+  // Categories from UserService
+  categories = computed(() => this.userService.categories());
 
   // Computed values
   totalHours = computed(() => {
@@ -149,6 +147,8 @@ export class PlanningComponent implements OnInit {
       const user = this.authService.currentUser();
       if (user) {
         await this.planService.loadActivePlan(user.id);
+        // Load user categories for category dropdowns
+        await this.userService.loadCategories(user.id);
       }
 
       // Check for active plan
@@ -522,6 +522,24 @@ export class PlanningComponent implements OnInit {
       this.logger.log('Draft cleared from localStorage');
     } catch (error) {
       this.logger.error('Failed to clear draft:', error);
+    }
+  }
+
+  /**
+   * Toggle category manager visibility
+   */
+  toggleCategoryManager(): void {
+    this.showCategoryManager.update(show => !show);
+  }
+
+  /**
+   * Handle categories changed event
+   * Reload categories after create/update/delete operations
+   */
+  async onCategoriesChanged(): Promise<void> {
+    const user = this.authService.currentUser();
+    if (user) {
+      await this.userService.loadCategories(user.id);
     }
   }
 }
