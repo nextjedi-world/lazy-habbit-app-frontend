@@ -1,0 +1,103 @@
+<div class="marker-list-container">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-state" role="status" aria-live="polite">
+      <p>Loading markers...</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (!hasMarkers()) {
+    <div class="empty-state">
+      <div class="empty-illustration" aria-hidden="true">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="60" r="50" stroke="#E0E0E0" stroke-width="2" stroke-dasharray="8 4"/>
+          <path d="M40 60 L50 70 L80 40" stroke="#9E9E9E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="60" y="95" font-size="24" text-anchor="middle" fill="#9E9E9E">📊</text>
+        </svg>
+      </div>
+
+      <h3 class="empty-title">Track anything that matters to you</h3>
+
+      <p class="empty-description">
+        No obligations, no targets.<br>
+        Just measurements and time.
+      </p>
+
+      <button
+        type="button"
+        class="create-button primary"
+        (click)="onCreateMarker()"
+        aria-label="Create your first progress marker">
+        <span aria-hidden="true">+</span>
+        Create Your First Marker
+      </button>
+
+      <a href="#" class="help-link">
+        Need ideas? Read the guide →
+      </a>
+    </div>
+  }
+
+  <!-- Markers List -->
+  @else {
+    <div class="markers-list">
+      <div class="list-header">
+        <h3>Progress Markers</h3>
+        <button
+          type="button"
+          class="create-button secondary"
+          (click)="onCreateMarker()"
+          aria-label="Create new marker">
+          <span aria-hidden="true">+</span>
+          Add Marker
+        </button>
+      </div>
+
+      <!-- Group by category -->
+      @for (category of getMarkersByCategory() | keyvalue; track category.key) {
+        <section class="category-group" [attr.aria-labelledby]="'category-' + category.key">
+          <h4 [id]="'category-' + category.key" class="category-name">
+            {{ category.key }}
+          </h4>
+
+          <div class="marker-cards">
+            @for (marker of category.value; track marker.id) {
+              <button
+                type="button"
+                class="marker-card"
+                (click)="onViewMarker(marker.id)"
+                [attr.aria-label]="marker.name + ': ' + (marker.latest_entry ? formatValue(marker.latest_entry.value, marker.unit) : 'No entries yet')">
+
+                <!-- Marker Header -->
+                <div class="marker-header">
+                  <span class="marker-icon" [style.color]="getCategoryColor(marker)" aria-hidden="true">
+                    {{ getCategoryIcon(marker) }}
+                  </span>
+                  <span class="marker-name">{{ marker.name }}</span>
+                </div>
+
+                <!-- Latest Entry -->
+                @if (marker.latest_entry) {
+                  <div class="marker-value">
+                    <span class="value">{{ formatValue(marker.latest_entry.value, marker.unit) }}</span>
+                    <span class="trend-icon" aria-hidden="true">{{ getTrendIcon(marker) }}</span>
+                  </div>
+
+                  <div class="marker-meta">
+                    <span class="last-entry">Last: {{ formatLastEntry(marker.latest_entry.entry_date) }}</span>
+                  </div>
+                } @else {
+                  <div class="marker-value no-data">
+                    <span class="empty-label">No entries yet</span>
+                  </div>
+                }
+
+              </button>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,97 @@
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: subtle-glow 3s ease-in-out infinite;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  &__number {
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  &__label {
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  // Size variants
+  &--small {
+    width: 60px;
+    height: 60px;
+
+    .tier-badge__number {
+      font-size: 24px;
+    }
+
+    .tier-badge__label {
+      font-size: 8px;
+    }
+  }
+
+  &--medium {
+    width: 100px;
+    height: 100px;
+
+    .tier-badge__number {
+      font-size: 36px;
+    }
+
+    .tier-badge__label {
+      font-size: 11px;
+    }
+  }
+
+  &--large {
+    width: 150px;
+    height: 150px;
+
+    .tier-badge__number {
+      font-size: 56px;
+    }
+
+    .tier-badge__label {
+      font-size: 14px;
+    }
+  }
+}
+
+// Gradient backgrounds based on tier
+.gradient-low {
+  background: linear-gradient(135deg, #9ca3af 0%, #60a5fa 100%);
+}
+
+.gradient-mid {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+}
+
+.gradient-high {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+}
+
+.gradient-elite {
+  background: linear-gradient(135deg, #8b5cf6 0%, #fbbf24 100%);
+}
+
+// Subtle animation
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+}

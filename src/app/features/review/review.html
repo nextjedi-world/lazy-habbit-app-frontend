@@ -1,0 +1,187 @@
+<div class="review-container">
+  <!-- Header -->
+  <header class="review-header">
+    <h1>Week Review</h1>
+  </header>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>Calculating your weekly score...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <mat-card class="error-card">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error() }}</p>
+        <button mat-raised-button color="primary" (click)="loadWeekReview()">
+          Retry
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Main Content -->
+  @if (!loading() && !error() && weeklyScore()) {
+    <div class="review-content">
+
+      <!-- Animated Circular Progress (Overall Score) -->
+      <div class="circular-progress-container">
+        <svg class="circular-progress" viewBox="0 0 200 200" role="img"
+             [attr.aria-label]="'Overall score ' + (weeklyScore()!.overall_score | percentage)">
+          <!-- Background circle -->
+          <circle
+            class="progress-background"
+            cx="100"
+            cy="100"
+            r="85"
+            fill="none"
+            stroke="#e0e0e0"
+            stroke-width="12"
+          />
+
+          <!-- Progress circle with gradient -->
+          <defs>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" [attr.stop-color]="getScoreColor(weeklyScore()!.overall_score)" />
+              <stop offset="100%" [attr.stop-color]="getScoreColor(weeklyScore()!.overall_score)"
+                    stop-opacity="0.6" />
+            </linearGradient>
+          </defs>
+
+          <circle
+            class="progress-circle"
+            cx="100"
+            cy="100"
+            r="85"
+            fill="none"
+            stroke="url(#scoreGradient)"
+            stroke-width="12"
+            stroke-linecap="round"
+            [style.stroke-dasharray]="534"
+            [style.stroke-dashoffset]="534 * (1 - weeklyScore()!.overall_score)"
+          />
+
+          <!-- Percentage text -->
+          <text
+            class="progress-text"
+            x="100"
+            y="100"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            {{ weeklyScore()!.overall_score | percentage }}
+          </text>
+
+          <text
+            class="progress-label"
+            x="100"
+            y="130"
+            text-anchor="middle"
+            dominant-baseline="middle"
+          >
+            Overall Score
+          </text>
+        </svg>
+
+        <!-- Clean Week Badge -->
+        @if (isCleanWeek()) {
+          <div class="clean-week-badge" role="status" aria-live="polite">
+            <mat-icon>auto_awesome</mat-icon>
+            <span>Clean Week</span>
+          </div>
+        }
+      </div>
+
+      <!-- Tier Status Card -->
+      @if (tierStatus()) {
+        <app-tier-status
+          [track]="tierStatus()!.track"
+          [consecutiveWeeks]="tierStatus()!.consecutiveWeeks"
+        />
+      }
+
+      <mat-divider class="section-divider"></mat-divider>
+
+      <!-- Score Details -->
+      <mat-card class="score-details">
+        <mat-card-header>
+          <mat-card-title>Score Breakdown</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="score-metrics">
+            <div class="metric">
+              <span class="metric-label">Hour Score</span>
+              <span class="metric-value">{{ weeklyScore()!.hour_score | percentage }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Task Score</span>
+              <span class="metric-value">{{ weeklyScore()!.task_score | percentage }}</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Overall Score</span>
+              <span class="metric-value metric-highlight">
+                {{ weeklyScore()!.overall_score | percentage }}
+              </span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-divider class="section-divider"></mat-divider>
+
+      <!-- Category Breakdown -->
+      <section class="category-breakdown">
+        <h2>Category Performance</h2>
+        <div class="category-grid">
+          @for (category of categoryScores(); track category.categoryId; let i = $index) {
+            <app-score-card
+              [categoryName]="category.categoryName"
+              [score]="category.overallScore"
+              [color]="getCategoryColor(i)"
+              [animationDelay]="i * 100"
+              [belowThreshold]="category.overallScore < 0.5"
+            />
+          } @empty {
+            <p class="empty-state">No categories to display</p>
+          }
+        </div>
+      </section>
+
+      <!-- Confetti Canvas -->
+      @if (showConfetti()) {
+        <div class="confetti-container" role="presentation" aria-hidden="true">
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+          <div class="confetti"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Floating Action Button -->
+  @if (!loading() && weeklyScore()) {
+    <button
+      mat-fab
+      extended
+      color="primary"
+      class="fab-plan-next"
+      (click)="navigateToPlanning()"
+      aria-label="Plan next week"
+    >
+      <mat-icon>event</mat-icon>
+      Plan Next Week
+    </button>
+  }
+</div>

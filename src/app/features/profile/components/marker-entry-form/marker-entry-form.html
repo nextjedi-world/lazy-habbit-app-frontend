@@ -1,0 +1,123 @@
+<div class="entry-form-container" [class.quick-mode]="quickMode()">
+  @if (!quickMode()) {
+    <h2 class="form-title">{{ formTitle }}</h2>
+  }
+
+  <!-- Error message -->
+  @if (submitError()) {
+    <div class="error-banner" role="alert">
+      <p class="error-message">{{ submitError() }}</p>
+      <button
+        type="button"
+        class="error-close"
+        aria-label="Dismiss error"
+        (click)="clearError()">
+        ×
+      </button>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="entry-form">
+    <!-- Value Field (Required) -->
+    <mat-form-field appearance="outline" class="form-field value-field">
+      <mat-label>Value</mat-label>
+      <input
+        matInput
+        type="number"
+        formControlName="value"
+        step="0.01"
+        placeholder="0"
+        required
+        [attr.aria-invalid]="form.controls.value.invalid && form.controls.value.touched"
+        [attr.aria-describedby]="form.controls.value.invalid ? 'value-error' : null" />
+      @if (markerUnit) {
+        <span matTextSuffix>{{ markerUnit }}</span>
+      }
+      @if (form.controls.value.invalid && form.controls.value.touched) {
+        <mat-error id="value-error">{{ valueErrors }}</mat-error>
+      }
+      @if (!quickMode()) {
+        <mat-hint>Enter the measurement value</mat-hint>
+      }
+    </mat-form-field>
+
+    <!-- Date Field (Default: today, can backdate) -->
+    @if (!quickMode()) {
+      <mat-form-field appearance="outline" class="form-field date-field">
+        <mat-label>Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          formControlName="entry_date"
+          [max]="maxDate"
+          required
+          [attr.aria-invalid]="form.controls.entry_date.invalid && form.controls.entry_date.touched"
+          [attr.aria-describedby]="form.controls.entry_date.invalid ? 'date-error' : null" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        @if (form.controls.entry_date.invalid && form.controls.entry_date.touched) {
+          <mat-error id="date-error">{{ dateErrors }}</mat-error>
+        }
+        <mat-hint>When was this measurement taken?</mat-hint>
+      </mat-form-field>
+    }
+
+    <!-- Notes Field (Optional) -->
+    @if (!quickMode()) {
+      <mat-form-field appearance="outline" class="form-field notes-field">
+        <mat-label>Notes (Optional)</mat-label>
+        <textarea
+          matInput
+          formControlName="notes"
+          rows="3"
+          maxlength="500"
+          placeholder="Any context or observations..."
+          [attr.aria-invalid]="form.controls.notes.invalid && form.controls.notes.touched"
+          [attr.aria-describedby]="form.controls.notes.invalid ? 'notes-error' : null">
+        </textarea>
+        @if (form.controls.notes.invalid && form.controls.notes.touched) {
+          <mat-error id="notes-error">{{ notesErrors }}</mat-error>
+        }
+        <mat-hint align="end">{{ form.controls.notes.value.length }}/500</mat-hint>
+      </mat-form-field>
+    }
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      @if (!quickMode()) {
+        <button
+          type="button"
+          mat-stroked-button
+          class="cancel-button"
+          [disabled]="isSubmitting()"
+          (click)="onCancel()">
+          Cancel
+        </button>
+      }
+
+      <button
+        type="submit"
+        mat-raised-button
+        color="primary"
+        class="submit-button"
+        [disabled]="form.invalid || isSubmitting()">
+        @if (isSubmitting()) {
+          <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+          <span>Saving...</span>
+        } @else {
+          <span>{{ submitButtonText }}</span>
+        }
+      </button>
+    </div>
+  </form>
+
+  <!-- Helper text for backdating -->
+  @if (!quickMode() && !isEditMode) {
+    <div class="form-help">
+      <p class="help-text">
+        You can backdate entries if you forgot to log earlier measurements.
+        Select a past date from the date picker.
+      </p>
+    </div>
+  }
+</div>

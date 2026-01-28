@@ -1,0 +1,102 @@
+<div class="marker-form-container">
+  <h2 class="form-title">{{ formTitle }}</h2>
+
+  <!-- Error message -->
+  @if (submitError()) {
+    <div class="error-banner" role="alert">
+      <p class="error-message">{{ submitError() }}</p>
+      <button
+        type="button"
+        class="error-close"
+        aria-label="Dismiss error"
+        (click)="clearError()">
+        ×
+      </button>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="marker-form">
+    <!-- Marker Name Field -->
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Marker Name</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        placeholder="e.g., Body Weight, Novel Word Count"
+        autocomplete="off"
+        required
+        [attr.aria-invalid]="form.controls.name.invalid && form.controls.name.touched"
+        [attr.aria-describedby]="form.controls.name.invalid ? 'name-error' : null" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <mat-error id="name-error">{{ nameErrors }}</mat-error>
+      }
+      <mat-hint>A descriptive name for what you're tracking (2-100 characters)</mat-hint>
+    </mat-form-field>
+
+    <!-- Unit Field (Optional) -->
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Unit (Optional)</mat-label>
+      <input
+        matInput
+        formControlName="unit"
+        placeholder="e.g., kg, words, hours"
+        autocomplete="off"
+        [attr.aria-invalid]="form.controls.unit.invalid && form.controls.unit.touched"
+        [attr.aria-describedby]="form.controls.unit.invalid ? 'unit-error' : null" />
+      @if (form.controls.unit.invalid && form.controls.unit.touched) {
+        <mat-error id="unit-error">{{ unitErrors }}</mat-error>
+      }
+      <mat-hint>Optional: the unit of measurement (max 20 characters)</mat-hint>
+    </mat-form-field>
+
+    <!-- Category Dropdown (Optional) -->
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Category (Optional)</mat-label>
+      <mat-select
+        formControlName="category_id"
+        aria-label="Select a category to associate with this marker">
+        <mat-option [value]="null">None</mat-option>
+        @for (category of categories(); track category.id) {
+          <mat-option [value]="category.id">
+            {{ category.name }}
+          </mat-option>
+        }
+      </mat-select>
+      <mat-hint>Link this marker to a habit category for context</mat-hint>
+    </mat-form-field>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        mat-stroked-button
+        class="cancel-button"
+        [disabled]="isSubmitting()"
+        (click)="onCancel()">
+        Cancel
+      </button>
+
+      <button
+        type="submit"
+        mat-raised-button
+        color="primary"
+        class="submit-button"
+        [disabled]="form.invalid || isSubmitting()">
+        @if (isSubmitting()) {
+          <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+          <span>Saving...</span>
+        } @else {
+          <span>{{ submitButtonText }}</span>
+        }
+      </button>
+    </div>
+  </form>
+
+  <!-- Help Text -->
+  <div class="form-help">
+    <p class="help-text">
+      <strong>Progress markers</strong> let you track measurements over time with complete freedom.
+      No targets, no schedules, just simple logging whenever you want.
+    </p>
+  </div>
+</div>

@@ -1,0 +1,232 @@
+.task-form-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+}
+
+.task-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .task-number {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .remove-btn {
+    color: #e53e3e;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: rgba(229, 62, 62, 0.1);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.task-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .full-width {
+    width: 100%;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+
+    .half-width {
+      flex: 1;
+    }
+  }
+
+  // Duration input with hours : minutes format
+  .duration-row {
+    margin-bottom: 0.5rem;
+
+    .duration-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+      margin-bottom: 0.5rem;
+    }
+
+    .duration-inputs {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .duration-field {
+        flex: 1;
+        max-width: 120px;
+      }
+
+      .duration-separator {
+        font-size: 24px;
+        font-weight: 600;
+        color: rgba(0, 0, 0, 0.6);
+        line-height: 1;
+        padding-bottom: 20px; // Align with input fields
+      }
+    }
+
+    .duration-error {
+      display: block;
+      font-size: 12px;
+      color: #f44336;
+      margin-top: 4px;
+      margin-left: 12px;
+    }
+  }
+}
+
+.weekly-total {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(63, 81, 181, 0.08) 0%, rgba(63, 81, 181, 0.12) 100%);
+  border-left: 3px solid #3f51b5;
+  border-radius: 8px;
+  margin-top: 8px;
+  animation: slideIn 0.3s ease;
+
+  .total-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #3f51b5;
+  }
+
+  .total-label {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    font-weight: 500;
+  }
+
+  .total-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #3f51b5;
+    margin-left: auto;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.category-indicator {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Category colors
+.category-health,
+.category-option.category-health {
+  background-color: #fef5e7;
+  color: #e67e22;
+  border-left: 4px solid #e67e22;
+}
+
+.category-learning,
+.category-option.category-learning {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-left: 4px solid #2e7d32;
+}
+
+.category-creative,
+.category-option.category-creative {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  border-left: 4px solid #7b1fa2;
+}
+
+.category-leisure,
+.category-option.category-leisure {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-left: 4px solid #1976d2;
+}
+
+.category-project,
+.category-option.category-project {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border-left: 4px solid #ef6c00;
+}
+
+.category-career,
+.category-option.category-career {
+  background-color: #fce4ec;
+  color: #c2185b;
+  border-left: 4px solid #c2185b;
+}
+
+.category-option {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .task-form-card {
+    padding: 1rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .duration-row .duration-inputs {
+    .duration-field {
+      max-width: 100px;
+    }
+  }
+}

@@ -1,0 +1,99 @@
+.tier-graph-container {
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.tier-graph {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+
+  .grid-line {
+    stroke: rgba(0, 0, 0, 0.1);
+    stroke-width: 1;
+
+    &.major-line {
+      stroke: rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .axis-label {
+    font-size: 12px;
+    fill: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+  }
+
+  .tier-line {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: stroke-width 0.2s ease;
+
+    &:hover {
+      stroke-width: 4;
+    }
+  }
+
+  .data-point {
+    cursor: pointer;
+    transition: r 0.2s ease, filter 0.2s ease;
+
+    &:hover {
+      r: 6;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+  }
+}
+
+// Legend
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .legend-text {
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.7);
+    font-weight: 500;
+  }
+}
+
+// Dark theme
+.dark-theme {
+  .tier-graph {
+    .grid-line {
+      stroke: rgba(255, 255, 255, 0.1);
+
+      &.major-line {
+        stroke: rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    .axis-label {
+      fill: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .graph-legend {
+    border-top-color: rgba(255, 255, 255, 0.1);
+
+    .legend-text {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+}

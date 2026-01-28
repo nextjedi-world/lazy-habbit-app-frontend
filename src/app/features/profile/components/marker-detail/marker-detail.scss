@@ -1,0 +1,272 @@
+.marker-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+
+  // Header Section
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+
+    .marker-info {
+      flex: 1;
+
+      .marker-name {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0 0 12px;
+        color: var(--text-primary, #1f2937);
+      }
+
+      .category-chip {
+        font-size: 0.875rem;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  // Latest Value Card
+  .latest-value-card {
+    margin-bottom: 24px;
+
+    .latest-value-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+
+      .value-display {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .value-label {
+          font-size: 0.875rem;
+          color: var(--text-secondary, #6b7280);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .value-number {
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: var(--primary-color, #3b82f6);
+        }
+
+        .value-date {
+          font-size: 0.875rem;
+          color: var(--text-secondary, #6b7280);
+        }
+      }
+
+      .trend-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px;
+        background-color: #f9fafb;
+        border-radius: 8px;
+
+        .trend-icon {
+          font-size: 2rem;
+          line-height: 1;
+        }
+
+        .trend-text {
+          font-size: 0.875rem;
+          text-align: center;
+          color: var(--text-secondary, #6b7280);
+        }
+      }
+    }
+  }
+
+  // Add Entry Section
+  .add-entry-section {
+    margin-bottom: 32px;
+    text-align: center;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  // Entries Section
+  .entries-section {
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: var(--text-primary, #1f2937);
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 48px 24px;
+
+      p {
+        margin: 0;
+        color: var(--text-secondary, #6b7280);
+      }
+    }
+
+    .entries-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .entry-card {
+        .entry-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+
+          .entry-main {
+            flex: 1;
+
+            .entry-value {
+              display: flex;
+              align-items: baseline;
+              gap: 12px;
+              margin-bottom: 8px;
+
+              .value {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: var(--text-primary, #1f2937);
+              }
+
+              .date {
+                font-size: 0.875rem;
+                color: var(--text-secondary, #6b7280);
+              }
+            }
+
+            .entry-notes {
+              margin: 0;
+              font-size: 0.875rem;
+              color: var(--text-secondary, #6b7280);
+              line-height: 1.5;
+            }
+          }
+
+          .entry-actions {
+            display: flex;
+            gap: 4px;
+          }
+        }
+      }
+    }
+
+    .load-more-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+
+      button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .entries-count {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-secondary, #6b7280);
+      }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 64px 24px;
+      text-align: center;
+
+      .empty-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+        color: var(--text-secondary, #9ca3af);
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary, #1f2937);
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-secondary, #6b7280);
+        max-width: 400px;
+      }
+
+      button {
+        margin-top: 8px;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .marker-detail-container {
+    padding: 16px;
+
+    .detail-header {
+      flex-direction: column;
+      gap: 16px;
+
+      .header-actions {
+        align-self: flex-end;
+      }
+
+      .marker-info .marker-name {
+        font-size: 1.5rem;
+      }
+    }
+
+    .latest-value-card {
+      .latest-value-content {
+        flex-direction: column;
+        align-items: flex-start;
+
+        .value-display .value-number {
+          font-size: 2rem;
+        }
+
+        .trend-display {
+          width: 100%;
+        }
+      }
+    }
+
+    .entries-section .entries-list .entry-card .entry-content {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .entry-actions {
+        align-self: flex-end;
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+<section class="category-section" [attr.aria-labelledby]="'category-' + category().id">
+  <!-- Category Header -->
+  <div class="category-header" [style.border-left-color]="getCategoryColor()">
+    <div class="category-title-container">
+      <mat-icon class="category-icon" [style.color]="getCategoryColor()">
+        {{ getCategoryIcon() }}
+      </mat-icon>
+      <h2 [id]="'category-' + category().id" class="category-title">
+        {{ category().name }}
+      </h2>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="category-progress">
+      <span class="progress-percentage">{{ progress() | number:'1.0-0' }}%</span>
+      <mat-progress-bar
+        mode="determinate"
+        [value]="progress()"
+        [style.--progress-color]="getCategoryColor()">
+      </mat-progress-bar>
+    </div>
+  </div>
+
+  <!-- Task List -->
+  <div class="task-list">
+    @for (task of tasks(); track task.id) {
+      <app-task-item
+        [task]="task"
+        (taskTapped)="onTaskTap($event)" />
+    }
+  </div>
+</section>

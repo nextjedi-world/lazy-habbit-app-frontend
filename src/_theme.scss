@@ -1,0 +1,227 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+// ========================================
+// Material Design 3 Theme Configuration
+// ========================================
+// Colorful, energetic theme for Lazy Habbit App
+// Mobile-first PWA with dark mode support
+
+@include mat.core();
+
+// ========================================
+// Theme Configuration (Material 3)
+// ========================================
+
+// Define light theme with blue primary and orange tertiary
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$blue-palette,
+    tertiary: mat.$orange-palette,
+  ),
+  typography: (
+    brand-family: 'Inter, system-ui, -apple-system, sans-serif',
+    plain-family: 'Inter, system-ui, -apple-system, sans-serif',
+    bold-weight: 700,
+    medium-weight: 500,
+    regular-weight: 400,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// Define dark theme
+$dark-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$blue-palette,
+    tertiary: mat.$orange-palette,
+  ),
+  typography: (
+    brand-family: 'Inter, system-ui, -apple-system, sans-serif',
+    plain-family: 'Inter, system-ui, -apple-system, sans-serif',
+    bold-weight: 700,
+    medium-weight: 500,
+    regular-weight: 400,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+// ========================================
+// Apply Themes
+// ========================================
+
+html {
+  @include mat.all-component-themes($light-theme);
+}
+
+// Dark mode (activated via .dark-theme class on html/body)
+html.dark-theme,
+body.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+}
+
+// ========================================
+// CSS Variables for Custom Usage
+// ========================================
+
+:root {
+  // Primary colors
+  --color-primary: #2563EB;
+  --color-primary-light: #4f7ef7;
+  --color-primary-lighter: #7199ff;
+  --color-primary-dark: #0041a8;
+
+  // Accent colors
+  --color-accent: #F97316;
+  --color-accent-light: #ff8c3f;
+  --color-accent-lighter: #ffa361;
+  --color-accent-dark: #ba3a00;
+
+  // Success colors
+  --color-success: #10B981;
+  --color-success-light: #3dd598;
+  --color-success-lighter: #5ce0ad;
+  --color-success-dark: #006e41;
+
+  // Warning colors
+  --color-warning: #FBBF24;
+  --color-warning-light: #ffd54f;
+  --color-warning-lighter: #ffe066;
+  --color-warning-dark: #655d00;
+
+  // Danger colors
+  --color-danger: #EF4444;
+  --color-danger-light: #ff6961;
+  --color-danger-lighter: #ff897d;
+  --color-danger-dark: #c70025;
+
+  // Neutral colors
+  --color-surface: #ffffff;
+  --color-surface-variant: #f5f5f5;
+  --color-surface-tint: #f0f9ff;
+  --color-on-surface: #1a1a1a;
+  --color-on-surface-variant: #666666;
+
+  // Tier colors (0-10 gradient)
+  --tier-0: #94a3b8;  // Slate
+  --tier-1: #60a5fa;  // Blue
+  --tier-2: #34d399;  // Green
+  --tier-3: #fbbf24;  // Yellow
+  --tier-4: #fb923c;  // Orange
+  --tier-5: #f87171;  // Red
+  --tier-6: #c084fc;  // Purple
+  --tier-7: #e879f9;  // Fuchsia
+  --tier-8: #fbbf24;  // Gold
+  --tier-9: #fb7185;  // Rose
+  --tier-10: #a78bfa; // Violet
+}
+
+// Dark theme CSS variables
+.dark-theme {
+  --color-surface: #1a1a1a;
+  --color-surface-variant: #2a2a2a;
+  --color-surface-tint: #0f172a;
+  --color-on-surface: #f5f5f5;
+  --color-on-surface-variant: #a3a3a3;
+}
+
+// ========================================
+// Accessibility Overrides
+// ========================================
+
+// Ensure WCAG AA compliance (4.5:1 contrast minimum)
+*:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary: #0041a8;
+    --color-accent: #ba3a00;
+    --color-success: #006e41;
+    --color-warning: #655d00;
+    --color-danger: #c70025;
+  }
+}
+
+// ========================================
+// Touch-Friendly Material Overrides
+// ========================================
+
+// Minimum 44px touch targets (WCAG 2.2 Level AA)
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-flat-button,
+.mat-mdc-stroked-button,
+.mat-mdc-icon-button,
+.mat-mdc-fab,
+.mat-mdc-mini-fab {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+// Card elevation for mobile
+.mat-mdc-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+// Enhanced button styles
+.mat-mdc-raised-button {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 200ms ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+  }
+}
+
+// Progress bars with gradients
+.mat-mdc-progress-bar {
+  border-radius: 8px;
+  overflow: hidden;
+
+  .mdc-linear-progress__bar-inner {
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  }
+}
+
+// Enhanced form fields
+.mat-mdc-form-field {
+  .mdc-text-field {
+    border-radius: 12px;
+  }
+}
+
+// ========================================
+// Global Theming Utilities
+// ========================================
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+// Smooth transitions for theme changes
+body {
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+}

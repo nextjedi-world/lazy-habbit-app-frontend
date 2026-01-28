@@ -1,0 +1,43 @@
+<mat-card
+  class="tier-status-card"
+  [class.promotion]="track() === 'promotion'"
+  [class.stable]="track() === 'stable'"
+  [class.demotion]="track() === 'demotion'"
+  role="status"
+  aria-live="polite"
+>
+  <mat-card-content>
+    <div class="tier-header">
+      <div class="tier-icon-container">
+        <mat-icon class="tier-icon">{{ trackIcon() }}</mat-icon>
+      </div>
+      <div class="tier-text">
+        <h3 class="tier-label">{{ trackLabel() }}</h3>
+        <p class="tier-description">{{ trackDescription() }}</p>
+      </div>
+    </div>
+
+    <div class="progress-tracker">
+      <div class="progress-label">
+        {{ consecutiveWeeks() }}/3 consecutive weeks
+      </div>
+      <div class="progress-dots" role="progressbar"
+           [attr.aria-valuenow]="consecutiveWeeks()"
+           aria-valuemin="0"
+           aria-valuemax="3"
+           [attr.aria-label]="consecutiveWeeks() + ' out of 3 weeks completed'">
+        @for (dot of progressDots(); track $index) {
+          <div
+            class="progress-dot"
+            [class.filled]="dot.filled"
+            [attr.aria-label]="dot.label + (dot.filled ? ' completed' : ' not completed')"
+          >
+            @if (dot.filled) {
+              <mat-icon class="dot-icon">check</mat-icon>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

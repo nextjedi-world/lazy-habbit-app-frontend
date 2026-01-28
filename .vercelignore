@@ -1,0 +1,8 @@
+.git
+.vscode
+*.md
+*.sh
+*.ps1
+supabase
+ARCHITECTURE_REVIEW_REPORT.md
+IMPLEMENTATION_SUMMARY.md

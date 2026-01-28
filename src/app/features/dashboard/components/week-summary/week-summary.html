@@ -1,0 +1,44 @@
+<mat-card class="week-summary-card">
+  <mat-card-content>
+    <!-- Week Date Range -->
+    <div class="week-range">
+      <span class="week-label">Week of</span>
+      <span class="week-dates">{{ summary().weekStart }} - {{ summary().weekEnd }}</span>
+    </div>
+
+    <!-- Overall Progress Circle -->
+    <div class="progress-circle">
+      <div class="percentage">{{ summary().overallProgress }}%</div>
+      <div class="progress-label">Overall Progress</div>
+    </div>
+
+    <!-- Progress Bars -->
+    <div class="progress-bars">
+      <!-- Hours Progress -->
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-title">Hours</span>
+          <span class="progress-value">{{ summary().completedHours }} / {{ summary().totalHours }}h</span>
+        </div>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="summary().totalHours > 0 ? (summary().completedHours / summary().totalHours) * 100 : 0"
+          class="hours-bar">
+        </mat-progress-bar>
+      </div>
+
+      <!-- Tasks Progress -->
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-title">Tasks</span>
+          <span class="progress-value">{{ summary().completedTasks }} / {{ summary().totalTasks }}</span>
+        </div>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="summary().totalTasks > 0 ? (summary().completedTasks / summary().totalTasks) * 100 : 0"
+          class="tasks-bar">
+        </mat-progress-bar>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

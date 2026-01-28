@@ -1,0 +1,10 @@
+<div
+  class="tier-badge"
+  [class]="'tier-badge--' + size() + ' ' + tierGradient()"
+  [attr.aria-label]="ariaLabel()"
+  role="status">
+  <div class="tier-badge__content">
+    <div class="tier-badge__number">{{ tier() }}</div>
+    <div class="tier-badge__label">{{ tierLabel() }}</div>
+  </div>
+</div>

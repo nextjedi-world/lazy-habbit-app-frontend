@@ -1,0 +1,264 @@
+.marker-list-container {
+  width: 100%;
+  padding: 1.5rem;
+}
+
+// Loading State
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  color: var(--text-secondary, #757575);
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+
+  .empty-illustration {
+    margin-bottom: 2rem;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text-primary, #212121);
+    margin: 0 0 1rem;
+  }
+
+  .empty-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary, #757575);
+    margin: 0 0 2rem;
+    max-width: 400px;
+  }
+
+  .create-button {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &.primary {
+      background: var(--primary-color, #1976D2);
+      color: white;
+
+      &:hover {
+        background: var(--primary-dark, #1565C0);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .help-link {
+    margin-top: 1.5rem;
+    color: var(--primary-color, #1976D2);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--primary-dark, #1565C0);
+      text-decoration: underline;
+    }
+  }
+}
+
+// Markers List
+.markers-list {
+  .list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--text-primary, #212121);
+      margin: 0;
+    }
+
+    .create-button.secondary {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid var(--border-color, #E0E0E0);
+      border-radius: 6px;
+      background: white;
+      color: var(--text-primary, #212121);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      &:hover {
+        background: var(--bg-hover, #F5F5F5);
+        border-color: var(--border-hover, #BDBDBD);
+      }
+    }
+  }
+
+  .category-group {
+    margin-bottom: 2rem;
+
+    .category-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-secondary, #757575);
+      margin: 0 0 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.875rem;
+    }
+
+    .marker-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+  }
+}
+
+// Marker Card
+.marker-card {
+  background: white;
+  border: 1px solid var(--border-color, #E0E0E0);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: var(--primary-color, #1976D2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .marker-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+
+    .marker-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .marker-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-primary, #212121);
+      flex: 1;
+    }
+  }
+
+  .marker-value {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    .value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary, #212121);
+    }
+
+    .trend-icon {
+      font-size: 1.25rem;
+      color: var(--text-secondary, #757575);
+    }
+
+    &.no-data {
+      .empty-label {
+        font-size: 0.875rem;
+        color: var(--text-disabled, #BDBDBD);
+        font-style: italic;
+      }
+    }
+  }
+
+  .marker-meta {
+    margin-top: auto;
+
+    .last-entry {
+      font-size: 0.75rem;
+      color: var(--text-secondary, #757575);
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .marker-list-container {
+    padding: 1rem;
+  }
+
+  .markers-list .marker-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .empty-state {
+    min-height: 300px;
+    padding: 1rem;
+
+    .empty-title {
+      font-size: 1.25rem;
+    }
+
+    .empty-description {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// Focus styles
+button:focus-visible {
+  outline: 2px solid var(--primary-color, #1976D2);
+  outline-offset: 2px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--primary-color, #1976D2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

@@ -1,0 +1,159 @@
+<div class="marker-detail-container">
+  <!-- Header Section -->
+  <div class="detail-header">
+    <div class="marker-info">
+      <h1 class="marker-name">{{ marker().name }}</h1>
+      @if (marker().category) {
+        <mat-chip class="category-chip">
+          {{ marker().category!.name }}
+        </mat-chip>
+      }
+    </div>
+
+    <div class="header-actions">
+      <button
+        type="button"
+        mat-icon-button
+        aria-label="Edit marker"
+        (click)="onEditMarker()">
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button
+        type="button"
+        mat-icon-button
+        color="warn"
+        aria-label="Delete marker"
+        (click)="onDeleteMarker()">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Latest Value Card -->
+  @if (marker().latest_entry) {
+    <mat-card class="latest-value-card">
+      <mat-card-content>
+        <div class="latest-value-content">
+          <div class="value-display">
+            <span class="value-label">Latest Value</span>
+            <span class="value-number">
+              {{ formatValue(marker().latest_entry!.value) }}
+            </span>
+            <span class="value-date">
+              {{ formatDate(marker().latest_entry!.entry_date) }}
+            </span>
+          </div>
+
+          <!-- Trend Indicator -->
+          @if (trend()) {
+            <div class="trend-display">
+              <span class="trend-icon" [attr.aria-label]="getTrendText()">
+                {{ getTrendIcon() }}
+              </span>
+              <span class="trend-text">{{ getTrendText() }}</span>
+            </div>
+          } @else if (isLoadingTrend()) {
+            <mat-spinner diameter="24"></mat-spinner>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- Add Entry Button -->
+  <div class="add-entry-section">
+    <button
+      type="button"
+      mat-raised-button
+      color="primary"
+      (click)="onAddEntry()">
+      <mat-icon>add</mat-icon>
+      Log New Entry
+    </button>
+  </div>
+
+  <!-- Entries List -->
+  <div class="entries-section">
+    <h2 class="section-title">Entry History</h2>
+
+    @if (isLoadingEntries() && !hasEntries()) {
+      <div class="loading-state">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Loading entries...</p>
+      </div>
+    } @else if (hasEntries()) {
+      <div class="entries-list">
+        @for (entry of entries(); track entry.id) {
+          <mat-card class="entry-card">
+            <mat-card-content>
+              <div class="entry-content">
+                <div class="entry-main">
+                  <div class="entry-value">
+                    <span class="value">{{ formatValue(entry.value) }}</span>
+                    <span class="date">{{ entry.entry_date }}</span>
+                  </div>
+                  @if (entry.notes) {
+                    <p class="entry-notes">{{ entry.notes }}</p>
+                  }
+                </div>
+
+                <div class="entry-actions">
+                  <button
+                    type="button"
+                    mat-icon-button
+                    aria-label="Edit entry"
+                    (click)="onEditEntry(entry)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    type="button"
+                    mat-icon-button
+                    color="warn"
+                    aria-label="Delete entry"
+                    (click)="onDeleteEntry(entry)">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Load More Button -->
+      @if (hasMore()) {
+        <div class="load-more-section">
+          <button
+            type="button"
+            mat-stroked-button
+            [disabled]="isLoadingEntries()"
+            (click)="onLoadMore()">
+            @if (isLoadingEntries()) {
+              <mat-spinner diameter="20"></mat-spinner>
+              <span>Loading...</span>
+            } @else {
+              <span>Load More</span>
+            }
+          </button>
+          <p class="entries-count">
+            Showing {{ entries().length }} of {{ totalEntries() }} entries
+          </p>
+        </div>
+      }
+    } @else {
+      <!-- Empty State -->
+      <div class="empty-state">
+        <mat-icon class="empty-icon">show_chart</mat-icon>
+        <h3>No entries yet</h3>
+        <p>Start tracking by logging your first measurement.</p>
+        <button
+          type="button"
+          mat-raised-button
+          color="primary"
+          (click)="onAddEntry()">
+          Log First Entry
+        </button>
+      </div>
+    }
+  </div>
+</div>

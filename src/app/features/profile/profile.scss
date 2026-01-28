@@ -1,0 +1,370 @@
+.profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
+
+// Loading State
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+
+  p {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 1rem;
+  }
+}
+
+// Profile Header Card
+.profile-header {
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 0;
+
+    @media (min-width: 640px) {
+      flex-direction: row;
+      gap: 2rem;
+    }
+  }
+}
+
+// Large Tier Badge
+.tier-badge-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  animation: pulse 2s ease-in-out infinite;
+
+  .tier-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .tier-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+  }
+
+  @media (min-width: 640px) {
+    width: 140px;
+    height: 140px;
+
+    .tier-number {
+      font-size: 3.5rem;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+// User Details
+.user-details {
+  flex: 1;
+  text-align: center;
+
+  @media (min-width: 640px) {
+    text-align: left;
+  }
+
+  .user-name {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .user-email {
+    font-size: 1rem;
+    color: rgba(0, 0, 0, 0.6);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .tier-description {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+    margin: 0;
+
+    span {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  }
+}
+
+// Stats Grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// Stat Card
+.stat-card {
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  mat-card-content {
+    padding: 1.5rem !important;
+  }
+
+  .stat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+  }
+}
+
+// Stat Card Color Variants
+.stat-card-blue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .stat-icon {
+    color: white;
+  }
+}
+
+.stat-card-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+
+  .stat-icon {
+    color: white;
+  }
+}
+
+.stat-card-orange {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+
+  .stat-icon {
+    color: white;
+  }
+}
+
+// Recent Scores Card
+.recent-scores-card {
+  margin-bottom: 1.5rem;
+
+  .scores-table {
+    width: 100%;
+
+    th {
+      font-weight: 600;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      font-size: 1rem;
+    }
+  }
+
+  .score-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .score-percentage {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .high-score {
+      color: #10b981;
+    }
+
+    .mid-score {
+      color: #f59e0b;
+    }
+
+    .low-score {
+      color: #ef4444;
+    }
+
+    .clean-icon {
+      color: #10b981;
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+}
+
+// Tier History Card
+.tier-history-card {
+  margin-bottom: 1.5rem;
+}
+
+// Settings Card
+.settings-card {
+  margin-bottom: 1.5rem;
+
+  mat-list-item {
+    height: auto !important;
+    padding: 1rem 0 !important;
+  }
+
+  mat-icon[matListItemIcon] {
+    color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(0, 0, 0, 0.6);
+
+  mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// Logout Section
+.logout-section {
+  text-align: center;
+  padding: 2rem 0;
+
+  .logout-button {
+    min-width: 200px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 500;
+
+    mat-icon {
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Tab Navigation
+.profile-tabs {
+  margin-bottom: 1.5rem;
+
+  .tab-content {
+    padding: 1.5rem 0;
+  }
+
+  .markers-tab {
+    min-height: 400px;
+  }
+}
+
+// Back Button for Markers
+.back-button-container {
+  margin-bottom: 1.5rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+// Dark Theme Overrides
+.dark-theme {
+  .profile-header {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  }
+
+  .user-details {
+    .user-name {
+      color: rgba(255, 255, 255, 0.87);
+    }
+
+    .user-email {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .tier-description {
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  .empty-state {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .settings-card {
+    mat-icon[matListItemIcon] {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .loading-state p {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}

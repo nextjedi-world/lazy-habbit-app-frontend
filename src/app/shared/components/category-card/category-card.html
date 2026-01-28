@@ -1,0 +1,15 @@
+<div class="category-card" [attr.aria-label]="ariaLabel()" role="region">
+  <div class="category-card__header">
+    <div class="category-card__icon-wrapper" [style.color]="color()">
+      <span class="material-icons" aria-hidden="true">{{ icon() }}</span>
+    </div>
+    <h3 class="category-card__name">{{ categoryName() }}</h3>
+  </div>
+
+  <div class="category-card__progress">
+    <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="progressPercentage()" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar__fill" [ngStyle]="progressBarStyles()"></div>
+    </div>
+    <span class="category-card__percentage">{{ progressPercentage() }}%</span>
+  </div>
+</div>

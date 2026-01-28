@@ -1,0 +1,250 @@
+<div class="onboarding-container">
+  <!-- Progress Bar -->
+  <div class="progress-section">
+    <mat-progress-bar
+      mode="determinate"
+      [value]="getProgress()"
+      aria-label="Onboarding progress">
+    </mat-progress-bar>
+    <p class="progress-text">Step {{ currentStep() + 1 }} of {{ totalSteps }}</p>
+  </div>
+
+  <!-- Skip Button -->
+  <button
+    mat-button
+    class="skip-button"
+    (click)="skipOnboarding()"
+    [disabled]="isCompleting()">
+    Skip for now
+  </button>
+
+  <!-- Step 1: Welcome -->
+  @if (currentStep() === 0) {
+    <div class="step-content animate-in" role="main">
+      <mat-card class="welcome-card">
+        <mat-icon class="welcome-icon" aria-hidden="true">🎯</mat-icon>
+
+        <h1>Welcome to Lazy Habbit</h1>
+
+        <p class="subtitle">A flexible habit tracker built for real life</p>
+
+        <div class="feature-list">
+          <div class="feature-item">
+            <mat-icon color="primary">schedule</mat-icon>
+            <div class="feature-content">
+              <h3>Flexible Quotas</h3>
+              <p>"Gym 3x this week" - not "Gym Monday 7am"</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <mat-icon color="primary">touch_app</mat-icon>
+            <div class="feature-content">
+              <h3>One-Tap Logging</h3>
+              <p>No duration input, no friction - just tap and go</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <mat-icon color="primary">trending_up</mat-icon>
+            <div class="feature-content">
+              <h3>Tier Progression</h3>
+              <p>Earn your way up through consistency (0-10 tiers)</p>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <mat-icon color="primary">shield</mat-icon>
+            <div class="feature-content">
+              <h3>3-Week Buffer</h3>
+              <p>Bad weeks happen - your tier stays stable</p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="next-button"
+          (click)="nextStep()">
+          Get Started
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </mat-card>
+    </div>
+  }
+
+  <!-- Step 2: Tier System Explanation -->
+  @if (currentStep() === 1) {
+    <div class="step-content animate-in" role="main">
+      <mat-card class="tier-card">
+        <mat-icon class="tier-icon" aria-hidden="true">🏆</mat-icon>
+
+        <h1>Understanding Tiers</h1>
+
+        <p class="subtitle">Your progress system explained</p>
+
+        <div class="tier-explanation">
+          <div class="tier-row">
+            <div class="tier-badge tier-high">Tier 10</div>
+            <p>Top tier - mastering 25-35 hours/week</p>
+          </div>
+
+          <div class="tier-divider"></div>
+
+          <div class="tier-row">
+            <div class="tier-badge tier-mid">Tier 5</div>
+            <p>Mid tier - building consistency</p>
+          </div>
+
+          <div class="tier-divider"></div>
+
+          <div class="tier-row">
+            <div class="tier-badge tier-start">Tier 0</div>
+            <p>Starting tier - everyone begins here</p>
+          </div>
+        </div>
+
+        <div class="tier-rules">
+          <h3>How Tiers Work</h3>
+
+          <div class="rule-item">
+            <mat-icon color="accent">arrow_upward</mat-icon>
+            <p><strong>Promotion Track:</strong> 80%+ overall score AND all categories ≥50%</p>
+          </div>
+
+          <div class="rule-item">
+            <mat-icon color="primary">remove</mat-icon>
+            <p><strong>Stable Track:</strong> 60-79% overall OR one category below 50%</p>
+          </div>
+
+          <div class="rule-item">
+            <mat-icon color="warn">arrow_downward</mat-icon>
+            <p><strong>Demotion Track:</strong> Below 60% overall OR two+ categories below 50%</p>
+          </div>
+
+          <div class="buffer-note">
+            <mat-icon>info</mat-icon>
+            <p><strong>3-Week Buffer:</strong> You need 3 consecutive weeks on the same track to change tiers. This protects you from temporary setbacks!</p>
+          </div>
+        </div>
+
+        <div class="step-buttons">
+          <button
+            mat-stroked-button
+            (click)="previousStep()">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
+
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="nextStep()">
+            Continue
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </mat-card>
+    </div>
+  }
+
+  <!-- Step 3: Planning Guide -->
+  @if (currentStep() === 2) {
+    <div class="step-content animate-in" role="main">
+      <mat-card class="planning-card">
+        <mat-icon class="planning-icon" aria-hidden="true">📅</mat-icon>
+
+        <h1>Weekly Planning</h1>
+
+        <p class="subtitle">Set your goals once, live with them all week</p>
+
+        <div class="planning-flow">
+          <div class="flow-step">
+            <div class="step-number">1</div>
+            <div class="step-info">
+              <h3>Plan on Monday</h3>
+              <p>Set your weekly goals every Monday (or Tuesday)</p>
+            </div>
+          </div>
+
+          <mat-icon class="flow-arrow">arrow_downward</mat-icon>
+
+          <div class="flow-step">
+            <div class="step-number">2</div>
+            <div class="step-info">
+              <h3>Log Daily</h3>
+              <p>One-tap task completion throughout the week</p>
+            </div>
+          </div>
+
+          <mat-icon class="flow-arrow">arrow_downward</mat-icon>
+
+          <div class="flow-step">
+            <div class="step-number">3</div>
+            <div class="step-info">
+              <h3>Review on Sunday</h3>
+              <p>See your scores and track your tier progress</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="planning-rules">
+          <h3>Important Rules</h3>
+
+          <div class="rule-warning">
+            <mat-icon color="warn">lock</mat-icon>
+            <div>
+              <p><strong>No Mid-Week Edits</strong></p>
+              <p>Once Monday/Tuesday pass, your plan is locked. This is intentional - commit and stick with it!</p>
+            </div>
+          </div>
+
+          <div class="rule-tip">
+            <mat-icon color="primary">repeat</mat-icon>
+            <div>
+              <p><strong>Repeat Last Week</strong></p>
+              <p>Most weeks are similar - use one-tap repeat to save time</p>
+            </div>
+          </div>
+
+          <div class="rule-tip">
+            <mat-icon color="accent">event_available</mat-icon>
+            <div>
+              <p><strong>Target 25-35 Hours</strong></p>
+              <p>This is the sweet spot for sustainable structured time</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="final-actions">
+          <button
+            mat-stroked-button
+            (click)="previousStep()">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
+
+          <button
+            mat-raised-button
+            color="primary"
+            class="complete-button"
+            (click)="completeOnboarding()"
+            [disabled]="isCompleting()">
+            @if (isCompleting()) {
+              <ng-container>
+                <mat-icon class="spinner">hourglass_empty</mat-icon>
+                Starting...
+              </ng-container>
+            } @else {
+              <ng-container>
+                <mat-icon>check_circle</mat-icon>
+                Create My First Plan
+              </ng-container>
+            }
+          </button>
+        </div>
+      </mat-card>
+    </div>
+  }
+</div>

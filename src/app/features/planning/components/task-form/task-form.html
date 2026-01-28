@@ -1,0 +1,128 @@
+<div class="task-form-card" [formGroup]="taskForm">
+  <div class="task-form-header">
+    <span class="task-number">Task {{ taskIndex() + 1 }}</span>
+    <button
+      type="button"
+      mat-icon-button
+      class="remove-btn"
+      (click)="onRemove()"
+      [attr.aria-label]="'Remove task ' + (taskIndex() + 1)">
+      <mat-icon>delete</mat-icon>
+    </button>
+  </div>
+
+  <div class="task-form-fields">
+    <!-- Task Name -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Task Name</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        placeholder="e.g., Gym workout"
+        [attr.aria-label]="'Task name for task ' + (taskIndex() + 1)"
+        required />
+      @if (taskForm.controls.name.invalid && taskForm.controls.name.touched) {
+        <mat-error>{{ nameError }}</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Category Dropdown -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Category</mat-label>
+      <mat-select
+        formControlName="category_id"
+        [attr.aria-label]="'Category for task ' + (taskIndex() + 1)"
+        required>
+        @for (category of categories(); track category.id) {
+          <mat-option [value]="category.id">
+            <span class="category-option" [class]="'category-' + getCategoryColor(category.id)">
+              {{ category.name }}
+            </span>
+          </mat-option>
+        }
+      </mat-select>
+      @if (taskForm.controls.category_id.invalid && taskForm.controls.category_id.touched) {
+        <mat-error>{{ categoryError }}</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Duration (Hours : Minutes) -->
+    <div class="duration-row">
+      <label class="duration-label">Duration</label>
+      <div class="duration-inputs">
+        <mat-form-field appearance="outline" class="duration-field">
+          <mat-label>Hours</mat-label>
+          <input
+            matInput
+            type="number"
+            formControlName="duration_hours"
+            min="0"
+            max="8"
+            (focus)="onDurationFocus($event)"
+            [attr.aria-label]="'Duration hours for task ' + (taskIndex() + 1)" />
+          @if (taskForm.controls.duration_hours.invalid && taskForm.controls.duration_hours.touched) {
+            <mat-error>{{ hoursError }}</mat-error>
+          }
+        </mat-form-field>
+
+        <span class="duration-separator">:</span>
+
+        <mat-form-field appearance="outline" class="duration-field">
+          <mat-label>Minutes</mat-label>
+          <input
+            matInput
+            type="number"
+            formControlName="duration_mins"
+            min="0"
+            max="59"
+            step="5"
+            (focus)="onDurationFocus($event)"
+            [attr.aria-label]="'Duration minutes for task ' + (taskIndex() + 1)" />
+          @if (taskForm.controls.duration_mins.invalid && taskForm.controls.duration_mins.touched) {
+            <mat-error>{{ minsError }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      @if (taskForm.controls.duration_minutes.value < 5 || taskForm.controls.duration_minutes.value > 480) {
+        <span class="duration-error">{{ durationError }}</span>
+      }
+    </div>
+
+    <!-- Frequency -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Times per week</mat-label>
+      <input
+        matInput
+        type="number"
+        formControlName="target_frequency"
+        min="1"
+        max="7"
+        [attr.aria-label]="'Target frequency for task ' + (taskIndex() + 1)"
+        required />
+      <mat-hint>1-7 times</mat-hint>
+      @if (taskForm.controls.target_frequency.invalid && taskForm.controls.target_frequency.touched) {
+        <mat-error>{{ frequencyError }}</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Weekly Total Display -->
+    @if (taskForm.valid && weeklyHours > 0) {
+      <div class="weekly-total">
+        <mat-icon class="total-icon">schedule</mat-icon>
+        <span class="total-label">Weekly total:</span>
+        <span class="total-value">{{ weeklyHoursDisplay }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Visual indicator for selected category -->
+  @if (taskForm.controls.category_id.value; as categoryId) {
+    <div class="category-indicator" [class]="'category-' + getCategoryColor(categoryId)">
+      @for (category of categories(); track category.id) {
+        @if (category.id === categoryId) {
+          {{ category.name }}
+        }
+      }
+    </div>
+  }
+</div>
