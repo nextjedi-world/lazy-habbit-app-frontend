@@ -4,9 +4,17 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "dev": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ci": "ng test --watch=false --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
+    "e2e": "echo no e2e suite yet"
   },
   "prettier": {
     "printWidth": 100,
@@ -41,9 +49,18 @@
     "@angular/build": "^21.0.3",
     "@angular/cli": "^21.0.3",
     "@angular/compiler-cli": "^21.0.0",
+    "@eslint/js": "^9.39.5",
+    "@sentry/angular": "^11.8.0",
+    "@vitest/coverage-v8": "4.0.15",
+    "angular-eslint": "^22.6.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
     "jsdom": "^27.1.0",
+    "lefthook": "^2.2.2",
+    "prettier": "^3.9.10",
     "supabase": "^2.67.1",
     "typescript": "~5.9.2",
+    "typescript-eslint": "^8.71.2",
     "vitest": "^4.0.8"
   }
 }

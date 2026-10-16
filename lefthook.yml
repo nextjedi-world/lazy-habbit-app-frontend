@@ -1,0 +1,20 @@
+# Git hooks (https://lefthook.dev). Installed by `make setup`.
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: '*.{js,mjs,cjs,ts,tsx,mts,json,css,scss,html,md,yml,yaml}'
+      run: npx prettier --check --ignore-unknown {staged_files}
+    eslint:
+      glob: '*.{js,mjs,cjs,ts,tsx,mts}'
+      run: npx eslint --no-warn-ignored {staged_files}
+
+commit-msg:
+  commands:
+    conventional-commit:
+      run: sh scripts/check-commit-msg.sh
+
+pre-push:
+  commands:
+    verify:
+      run: make verify

@@ -18,7 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snackbar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Category } from '../../../../core/models/user.model';
 import { UserService } from '../../../../core/services/user';
 import {

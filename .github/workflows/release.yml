@@ -1,0 +1,30 @@
+# release-please: every push to master updates one release PR (version + CHANGELOG.md) from
+# conventional commits. Merging that PR tags the release.
+# Vercel production deploys stay in deploy-production.yml (push to master).
+# Inlined from nextjedi/platform/.github/workflows/release.yml because this repo is public
+# (private reusable workflows cannot be called); switch back after the org move (NEX-1019).
+name: release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

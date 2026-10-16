@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "extraKnownMarketplaces": {
+    "nextjedi": { "source": { "source": "github", "repo": "nextjedi/platform" } }
+  },
+  "enabledPlugins": {
+    "nextjedi-core@nextjedi": true,
+    "nextjedi-web@nextjedi": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(make setup)",
+      "Bash(make dev)",
+      "Bash(make verify)",
+      "Bash(make lint)",
+      "Bash(make format)",
+      "Bash(make format-check)",
+      "Bash(make typecheck)",
+      "Bash(make test)",
+      "Bash(make build)",
+      "Bash(make e2e)",
+      "Bash(npm run *)",
+      "Bash(npm ci)",
+      "Bash(npm install)",
+      "Bash(npm ls *)",
+      "Bash(npx vitest *)",
+      "Bash(npx eslint *)",
+      "Bash(npx prettier *)",
+      "Bash(npx tsc *)",
+      "Bash(npx ng *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git switch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh run view *)",
+      "WebSearch",
+      "WebFetch(domain:angular.dev)",
+      "WebFetch(domain:supabase.com)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Read(./src/environments/environment.ts)",
+      "Read(./src/environments/environment.prod.ts)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(rm -rf *)",
+      "Bash(npm publish *)"
+    ]
+  }
+}

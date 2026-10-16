@@ -138,7 +138,7 @@ describe('AuthService', () => {
   });
 
   describe('signOut', () => {
-    it('should call Supabase signOut and navigate to login', async () => {
+    it('should call Supabase signOut and navigate to the landing page', async () => {
       supabaseMock.client.auth.signOut.mockResolvedValue({ error: null });
 
       await service.signOut();
@@ -146,7 +146,7 @@ describe('AuthService', () => {
       expect(supabaseMock.client.auth.signOut).toHaveBeenCalled();
       expect(service.currentUser()).toBeNull();
       expect(service.isAuthenticated()).toBe(false);
-      expect(routerMock.navigate).toHaveBeenCalledWith(['/auth/login']);
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/']);
     });
 
     it('should throw error when signOut fails', async () => {

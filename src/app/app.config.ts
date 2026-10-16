@@ -1,19 +1,27 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode, APP_INITIALIZER } from '@angular/core';
+import {
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+  isDevMode,
+  APP_INITIALIZER,
+  ErrorHandler,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
 import { provideServiceWorker } from '@angular/service-worker';
 import { AuthService } from './core/services/auth';
+import { GlobalErrorHandler } from './core/services/global-error-handler';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideRouter(routes),
     provideAnimations(),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000'
+      registrationStrategy: 'registerWhenStable:30000',
     }),
     // Initialize auth before app boots (restores session from localStorage)
     {
@@ -23,7 +31,7 @@ export const appConfig: ApplicationConfig = {
         await authService.waitForInit();
       },
       deps: [AuthService],
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 };

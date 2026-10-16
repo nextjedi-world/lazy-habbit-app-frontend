@@ -1,5 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { captureError } from './telemetry';
 
 /**
  * Logger service that respects environment configuration.
@@ -31,16 +32,12 @@ export class Logger {
   }
 
   /**
-   * Log error messages (always logged, even in production)
-   * Use this for critical errors that should be captured
+   * Log error messages (always logged, even in production) as one structured record, and
+   * forward to Sentry when a DSN is configured (no-op otherwise).
    */
   error(message: string, error?: any): void {
     console.error(`[ERROR] ${message}`, error);
-
-    // TODO: In future, send to error tracking service (Sentry, etc.)
-    // if (environment.production) {
-    //   this.errorTrackingService.captureError(message, error);
-    // }
+    captureError(error, message);
   }
 
   /**

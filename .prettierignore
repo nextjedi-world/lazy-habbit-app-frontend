@@ -1,0 +1,21 @@
+dist
+.angular
+coverage
+node_modules
+package-lock.json
+supabase
+src/environments/environment.ts
+src/environments/environment.prod.ts
+*.md
+# Baseline: existing app sources were never Prettier-formatted (89 files). Ignored so format:check
+# is green; run `npx prettier --write src` in a dedicated formatting PR, then delete this line.
+src
+# Baseline: pre-existing config files left as they were.
+.vscode
+.github/workflows/deploy-preview.yml
+.github/workflows/deploy-production.yml
+angular.json
+ngsw-config.json
+public
+tsconfig*.json
+vercel.json

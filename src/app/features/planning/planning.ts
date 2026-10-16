@@ -40,7 +40,7 @@ interface TaskInput extends TaskFormData {
 export class PlanningComponent implements OnInit {
   // Services
   private readonly planService = inject(PlanService);
-  private readonly authService = inject(AuthService);
+  protected readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   readonly dateUtils = inject(DateUtilsService); // Public for template access
   private readonly logger = inject(Logger);

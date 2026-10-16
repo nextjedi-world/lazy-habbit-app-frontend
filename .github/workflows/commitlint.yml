@@ -1,0 +1,37 @@
+# Conventional PR title (it becomes the squash commit release-please reads) and a Linear reference.
+# Inlined from nextjedi/platform commitlint.yml because that repo is private.
+name: commitlint
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  pr-title:
+    name: conventional PR title
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install commitlint
+        run: |
+          npm install --prefix "$RUNNER_TEMP/cl" --no-audit --no-fund --silent @commitlint/cli@20 @commitlint/config-conventional@20
+          echo "export default { extends: ['@commitlint/config-conventional'], rules: { 'header-max-length': [2, 'always', 100], 'subject-case': [0], 'body-max-line-length': [0], 'footer-max-line-length': [0] } };" > "$RUNNER_TEMP/cl/commitlint.config.mjs"
+      - name: Lint PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf '%s\n' "$PR_TITLE" | "$RUNNER_TEMP/cl/node_modules/.bin/commitlint" --config "$RUNNER_TEMP/cl/commitlint.config.mjs" --cwd "$RUNNER_TEMP/cl" || {
+            echo "::error title=PR title::Use a conventional commit title, e.g. 'feat: add x'."; exit 1; }
+      - name: Check Linear reference
+        if: github.event.pull_request.user.type != 'Bot'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n' "$PR_BODY" | grep -Eiq "(fixes|closes|resolves|refs|part of)[[:space:]:]+NEX-[0-9]+" \
+            || { echo "::error title=Linear reference::Add a line like 'Fixes NEX-123' to the PR body."; exit 1; }
