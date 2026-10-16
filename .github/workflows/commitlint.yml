@@ -1,5 +1,5 @@
 # Conventional PR title (it becomes the squash commit release-please reads) and a Linear reference.
-# Inlined from nextjedi/platform commitlint.yml because that repo is private.
+# Inlined from nextjedi-world/platform commitlint.yml because that repo is private.
 name: commitlint
 
 on:
