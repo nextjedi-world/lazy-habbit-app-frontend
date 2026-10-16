@@ -8,11 +8,13 @@ on:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
   deploy:
     name: Deploy Preview to Vercel
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -27,7 +29,23 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      # Skip the preview cleanly (instead of failing the PR) when the Vercel
+      # credentials are missing, empty, or rejected by Vercel (revoked/expired).
+      - name: Check Vercel credentials
+        id: vercel_creds
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::warning title=Vercel preview skipped::VERCEL_TOKEN, VERCEL_ORG_ID or VERCEL_PROJECT_ID is not set (expected on fork PRs). Preview deploy skipped."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          elif ! vercel whoami --token "$VERCEL_TOKEN" > /dev/null 2>&1; then
+            echo "::warning title=Vercel preview skipped::VERCEL_TOKEN was rejected by Vercel (revoked or expired). Rotate the VERCEL_TOKEN Actions secret. Preview deploy skipped."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Environment File
+        if: steps.vercel_creds.outputs.enabled == 'true'
         run: |
           cat > src/environments/environment.ts << EOF
           export const environment = {
@@ -38,15 +56,18 @@ jobs:
           EOF
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        if: steps.vercel_creds.outputs.enabled == 'true'
+        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
 
       - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        if: steps.vercel_creds.outputs.enabled == 'true'
+        run: vercel build --token="$VERCEL_TOKEN"
 
       - name: Deploy to Vercel
+        if: steps.vercel_creds.outputs.enabled == 'true'
         id: deploy
         run: |
-          URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          URL=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
           echo "deployment_url=$URL" >> $GITHUB_OUTPUT
           echo "🚀 Preview deployment ready!"
           echo "🔗 Preview URL: $URL"
