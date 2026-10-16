@@ -1,7 +1,7 @@
 # release-please: every push to master updates one release PR (version + CHANGELOG.md) from
 # conventional commits. Merging that PR tags the release.
 # Vercel production deploys stay in deploy-production.yml (push to master).
-# Inlined from nextjedi/platform/.github/workflows/release.yml because this repo is public
+# Inlined from nextjedi-world/platform/.github/workflows/release.yml because this repo is public
 # (private reusable workflows cannot be called); switch back after the org move (NEX-1019).
 name: release
 

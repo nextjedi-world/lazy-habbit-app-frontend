@@ -4,7 +4,7 @@ Lazy Habbit App (product id `habit-app`): a habit tracker built on "structural f
 
 Full spec (schema SQL, Supabase query patterns, scope, checklist): `docs/PROJECT_SPEC.md`. Supabase operations guide: `supabase/migrations/CLAUDE.md`. Product docs and the original planning doc live outside this repo in `D:/Projects/Habbit app/`.
 
-## Commands (the repo contract, see nextjedi/platform docs/CONTRACTS.md)
+## Commands (the repo contract, see nextjedi-world/platform docs/CONTRACTS.md)
 | Command | What it does |
 |---|---|
 | `make setup` | `npm ci`, writes placeholder `src/environments/environment*.ts` if missing, installs lefthook git hooks |
