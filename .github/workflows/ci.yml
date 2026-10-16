@@ -1,3 +1,10 @@
+# Self-contained CI. This repo is public and nextjedi/platform is private, so the reusable
+# workflow nextjedi/platform/.github/workflows/ci-web.yml@main cannot be called from here.
+# Keep the steps in line with ci-web.yml (checkout, Node 22, npm ci, make verify).
+# make verify = lint, format check, typecheck, vitest with coverage, production build.
+# The claude-review and claude-mention callers are removed for the same reason; they come back
+# after the org move (NEX-1019).
+# src/environments/environment.ts is generated from environment.example.ts, so no secrets are needed.
 name: ci
 
 on:
@@ -14,12 +21,23 @@ permissions:
   contents: read
 
 jobs:
-  # make setup + make verify (lint, format check, typecheck, vitest with coverage, production build).
-  # src/environments/environment.ts is generated from environment.example.ts, so no secrets are needed.
-  web:
-    uses: nextjedi/platform/.github/workflows/ci-web.yml@main
-    with:
-      working-directory: .
-      node-version: '22'
-      coverage-reports: coverage/lazy-habbit-app/lcov.info coverage/lcov.info
-    secrets: inherit
+  verify:
+    name: verify (web)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: make verify
+      - name: Upload test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-web
+          path: |
+            coverage/
+          if-no-files-found: ignore
