@@ -1,0 +1,18 @@
+# release-please: every push to master updates one release PR; merging it tags the release and
+# moves the referenced Linear issues to Done (with the LINEAR_API_KEY secret).
+# Vercel production deploys stay in deploy-production.yml (push to master).
+name: release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    uses: nextjedi/platform/.github/workflows/release.yml@main
+    secrets: inherit

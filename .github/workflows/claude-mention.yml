@@ -1,0 +1,26 @@
+# Claude answers @claude in issues and PRs. Skipped until the repo variable
+# CLAUDE_REVIEW_ENABLED is 'true' (set it after adding the CLAUDE_CODE_OAUTH_TOKEN secret).
+name: Claude mention
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened, assigned]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  claude:
+    if: vars.CLAUDE_REVIEW_ENABLED == 'true'
+    uses: nextjedi/platform/.github/workflows/claude-mention.yml@main
+    secrets: inherit

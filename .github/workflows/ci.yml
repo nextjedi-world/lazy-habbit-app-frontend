@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # make setup + make verify (lint, format check, typecheck, vitest with coverage, production build).
+  # src/environments/environment.ts is generated from environment.example.ts, so no secrets are needed.
+  web:
+    uses: nextjedi/platform/.github/workflows/ci-web.yml@main
+    with:
+      working-directory: .
+      node-version: '22'
+      coverage-reports: coverage/lazy-habbit-app/lcov.info coverage/lcov.info
+    secrets: inherit
